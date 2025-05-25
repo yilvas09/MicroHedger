@@ -31,5 +31,6 @@
 *.out
 *.app
 
-# subfolders
+# other stuffs
+.DS_store
 build
