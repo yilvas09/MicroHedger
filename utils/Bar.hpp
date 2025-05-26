@@ -13,11 +13,13 @@ private:
 public:
     Bar() : price(0.0), volume(0.0) {}
     Bar(double p, double v) : price(p), volume(v) {}
-    inline double Price() { return price; }
-    inline double Volume() { return volume; }
+    ~Bar() {}
+
+    inline double Price() const { return price; }
+    inline double Volume() const { return volume; }
+
     int ExecuteAgainst(double &v);
     void AddVolumesBy(double v);
-    ~Bar() {}
 };
 
 #endif

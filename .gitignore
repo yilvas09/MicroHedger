@@ -34,3 +34,4 @@
 # other stuffs
 .DS_store
 build
+.vscode

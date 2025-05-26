@@ -21,12 +21,12 @@ LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
 }
 
 // check whether the current LOB contains orders at price p; returns 1 (sell orders) or -1 (buy orders)
-int LOB::ContainsPrice(double p)
+int LOB::ContainsPrice(double p) const
 {
     if (p > bid() && p < ask())
         return 0;
     const int sign = p <= bid() ? -1 : 1;
-    std::vector<Bar> &bars = sign > 0 ? asks : bids;
+    const std::vector<Bar> &bars = sign > 0 ? asks : bids;
     for (auto bar : bars)
     {
         if (abs(bar.Price() - p) < __DBL_EPSILON__)
@@ -36,12 +36,12 @@ int LOB::ContainsPrice(double p)
 }
 
 // return the location of a price in one side of the lob (s = 1: asks; s = -1: bids), in ascending order
-int LOB::PriceLocation(int s, double p)
+int LOB::PriceLocation(int s, double p) const
 {
     if (s == 0)
         return -1;
 
-    std::vector<Bar> &bars = s > 0 ? asks : bids;
+    const std::vector<Bar> &bars = s > 0 ? asks : bids;
     int location = 0;
     for (auto bar : bars)
     {
@@ -67,22 +67,58 @@ void LOB::AddLimitOrder(int s, double p, double v)
     {
         std::vector<Bar> &bars = s > 0 ? asks : bids;
         std::vector<Bar>::iterator it = bars.begin() + PriceLocation(s, p);
-        auto bar = *(it);
+        auto &bar = *(it);
         bar.AddVolumesBy(v);
     }
     else // exists a bar at price p on the other side of the book -> execute against the bar
     {
         std::vector<Bar> &bars_other_side = s > 0 ? bids : asks;
         std::vector<Bar>::iterator it = bars_other_side.begin() + PriceLocation(-s, p);
-        auto bar = *(it);
+        auto &bar = *(it);
         bar.ExecuteAgainst(v);
         if (abs(bar.Volume() - 0.0) < __DBL_EPSILON__)
         {
             bars_other_side.erase(it);
-            if (v > -__DBL_EPSILON__) // if there is outstanding volume, we need to add it to existing lob
+            if (v > __DBL_EPSILON__) // if there is outstanding volume, we need to add it to existing lob
                 AddLimitOrder(s, p, v);
         }
     }
+}
+
+// adjust the lob with an incoming market order of sign s (1: sell; -1: buy) and volume v
+// return how many orders are executed at what price, and VWAP as a double
+double LOB::AbsorbMarketOrder(std::vector<Bar> &eos,
+                              double &v,
+                              int s)
+{
+    if (s != -1 && s != 1)
+    {
+        std::cout << "LOB error: wrong sign for market orders. Must be -1 or 1." << std::endl;
+        return 0.0;
+    }
+    eos.resize(0);
+    double v_ttl = 0.0;
+    double pos_ttl = 0.0;
+    std::vector<Bar> &bars_other_side = -s > 0 ? asks : bids; // sell orders, otherside = bid; buy orders, otherside - asks
+    // if otherside is ask, loop from begin to end; if bid, loop from end to begin
+    while (v > __DBL_EPSILON__ && bars_other_side.size())
+    {
+        double orig_v = v;
+        // if otherside is ask, execute from the beginning; otherwise from the end
+        std::vector<Bar>::iterator it = -s > 0 ? bars_other_side.begin() : bars_other_side.end() - 1;
+        auto &bar = *(it);
+        bar.ExecuteAgainst(v);
+
+        // record executed orders
+        double exe_v = orig_v - v;
+        v_ttl += exe_v;
+        pos_ttl += exe_v * bar.Price();
+        eos.push_back(Bar(bar.Price(), exe_v));
+
+        if (bar.Volume() < __DBL_EPSILON__)
+            bars_other_side.erase(it);
+    }
+    return abs(v_ttl) > __DBL_EPSILON__ ? pos_ttl / v_ttl : 0.0;
 }
 
 // pretty print the lob in the following format
@@ -90,7 +126,7 @@ void LOB::AddLimitOrder(int s, double p, double v)
     price   1.1 1.5 3.2 4.1 4.5 5.2
     volume  -1  -4  -2   2   4   1
 */
-void LOB::PrintLOB()
+void LOB::PrintLOB() const
 {
     std::string title = " Current limit order book ";
     std::string p_row = "price\t";
