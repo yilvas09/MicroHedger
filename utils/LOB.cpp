@@ -10,13 +10,15 @@ LOB::LOB()
 LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
          const std::vector<double> &bps, const std::vector<double> &bvs)
 {
-    for (int i = 0; i < aps.size(); i++)
+    for (int i = 0; i < 2; i++)
     {
-        asks.push_back(Bar(aps[i], avs[i]));
-    }
-    for (int i = 0; i < bps.size(); i++)
-    {
-        bids.push_back(Bar(bps[i], bvs[i]));
+        std::vector<double> ps_tmp = i == 0 ? aps : bps;
+        std::vector<double> vs_tmp = i == 0 ? avs : bvs;
+        std::vector<Bar> &bars = i == 0 ? asks : bids;
+        std::sort(ps_tmp.begin(), ps_tmp.end());
+        // TODO: need to organise vs_tmp in the same order as ps_tmp
+        for (int j = 0; j < ps_tmp.size(); j++)
+            bars.push_back(Bar(ps_tmp[i], vs_tmp[i]));
     }
 }
 
