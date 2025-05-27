@@ -28,6 +28,11 @@ int main()
     currentLOB.PrintLOB();
     std::cout << "===================================" << std::endl;
 
+    std::cout << "Adding a sell limit order of price 3.2 and volume 2:" << std::endl;
+    currentLOB.AddLimitOrder(1, 3.2, 3);
+    currentLOB.PrintLOB();
+    std::cout << "===================================" << std::endl;
+
     std::vector<Bar> executed_orders;
     double v_mo = 3;
     std::cout << "A sell market order of volume " << v_mo << " arrives:" << std::endl;

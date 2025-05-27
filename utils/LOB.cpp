@@ -63,7 +63,7 @@ void LOB::AddLimitOrder(int s, double p, double v)
         std::vector<Bar>::iterator it = bars.begin() + PriceLocation(s, p);
         bars.insert(it, Bar(p, v));
     }
-    else if (state > 1) // already exists a bar at price p on the same side of book -> add volume to existing bar
+    else if (state > 0) // already exists a bar at price p on the same side of book -> add volume to existing bar
     {
         std::vector<Bar> &bars = s > 0 ? asks : bids;
         std::vector<Bar>::iterator it = bars.begin() + PriceLocation(s, p);
