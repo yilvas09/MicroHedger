@@ -2,7 +2,7 @@
 #define BOOST_TEST_MODULE BarTest
 #include <boost/test/included/unit_test.hpp>
 #include <cmath>
-#include "../utils/Bar.hpp"
+#include "../libs/Bar.hpp"
 
 const double EPSILON = 1e-9;
 

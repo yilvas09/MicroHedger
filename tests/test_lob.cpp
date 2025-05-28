@@ -3,7 +3,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <vector>
 #include <cmath>
-#include "../utils/LOB.hpp"
+#include "../libs/LOB.hpp"
 
 const double EPSILON = 1e-9;
 
