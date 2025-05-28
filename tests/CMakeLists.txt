@@ -22,13 +22,19 @@ add_custom_target(run_tests
     COMMENT "Running all unit tests"
 )
 
-# a single executable for all tests
-add_executable(all_tests test_bar.cpp test_lob.cpp test_paired_vector_sort.cpp)
-target_compile_definitions(all_tests PRIVATE BOOST_TEST_DYN_LINK)
-target_link_libraries(all_tests lob_lib utils_lib ${Boost_LIBRARIES})
-
 # set output directories
-set_target_properties(test_bar test_lob test_paired_vector_sort all_tests
+set_target_properties(test_bar test_lob test_paired_vector_sort
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
+# alternatively we can use a single executable for all tests
+# add_executable(all_tests test_bar.cpp test_lob.cpp test_paired_vector_sort.cpp)
+# target_compile_definitions(all_tests PRIVATE BOOST_TEST_DYN_LINK)
+# target_link_libraries(all_tests lob_lib utils_lib ${Boost_LIBRARIES})
+
+# set output directories
+# set_target_properties(all_tests
+#     PROPERTIES
+#     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#)
