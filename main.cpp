@@ -4,11 +4,11 @@
 
 int main()
 {
-    std::vector<double> askprices = {4.1, 4.5, 5.2};
-    std::vector<double> askvolume = {2, 4, 1};
-    std::vector<double> bidprices = {1.1, 1.5, 3.2};
-    std::vector<double> bidvolume = {1, 4, 2};
-    LOB currentLOB(askprices, askvolume, bidprices, bidvolume);
+    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
+    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
+    LOB currentLOB(ask_prices, ask_volumes, bid_prices, bid_volumes);
     currentLOB.PrintLOB();
     std::cout << "===================================" << std::endl;
 

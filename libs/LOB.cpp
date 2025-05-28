@@ -1,5 +1,6 @@
 #include <iostream>
 #include "LOB.hpp"
+#include "utilities.cpp"
 
 LOB::LOB()
 {
@@ -15,10 +16,10 @@ LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
         std::vector<double> ps_tmp = i == 0 ? aps : bps;
         std::vector<double> vs_tmp = i == 0 ? avs : bvs;
         std::vector<Bar> &bars = i == 0 ? asks : bids;
-        std::sort(ps_tmp.begin(), ps_tmp.end());
-        // TODO: need to organise vs_tmp in the same order as ps_tmp
+        // sort ps_tmp while organising vs_tmp so that they are in the same order
+        Utils::sortPairedVectors(ps_tmp, vs_tmp);
         for (int j = 0; j < ps_tmp.size(); j++)
-            bars.push_back(Bar(ps_tmp[i], vs_tmp[i]));
+            bars.push_back(Bar(ps_tmp[j], vs_tmp[j]));
     }
 }
 
