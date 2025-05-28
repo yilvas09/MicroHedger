@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE PairedVectorSortTest
 #include <boost/test/included/unit_test.hpp>
 #include <vector>
-#include "../libs/utilities.cpp"
+#include "../libs/Utils.cpp"
 
 // auxilary functions
 bool vectorsEqual(const std::vector<double>& v1, const std::vector<double>& v2, double tolerance = 1e-9) {
