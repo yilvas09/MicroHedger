@@ -36,10 +36,10 @@ BOOST_AUTO_TEST_CASE(test_parameterized_constructor) {
 BOOST_AUTO_TEST_CASE(test_empty_sides) {
     std::vector<double> ask_prices = {101.0, 102.0};
     std::vector<double> ask_volumes = {100.0, 200.0};
-    std::vector<double> empty_prices;
-    std::vector<double> empty_volumes;
+    std::vector<double> bid_prices;   //no bid orders
+    std::vector<double> bid_volumes;
     
-    LOB lob(ask_prices, ask_volumes, empty_prices, empty_volumes);
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
     
     BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON);
