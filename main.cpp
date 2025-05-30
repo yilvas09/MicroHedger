@@ -1,55 +1,57 @@
 #include <iostream>
-#include "libs/LOB.hpp"
 #include <vector>
+#include <random>
+#include "libs/LOB.hpp"
 
 int main()
 {
-    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
-    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
-    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
-    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
-    LOB currentLOB(ask_prices, ask_volumes, bid_prices, bid_volumes);
-    currentLOB.PrintLOB();
-    std::cout << "===================================" << std::endl;
+    const int T = 3;
+    const int H = 2;
+    const int Q = 5;
+    const int total_time = T * H * Q;
 
-    std::cout << "This LOB contains orders at price 1.1? " << currentLOB.ContainsPrice(1.1) << std::endl;
-    std::cout << "This LOB contains orders at price 3.0? " << currentLOB.ContainsPrice(3.0) << std::endl;
-    std::cout << "===================================" << std::endl;
+    const double p0 = 1.0;
+    const double vol_news = 1.0;
 
-    std::cout << "Location of sell order at price 3.0: " << currentLOB.PriceLocation(1, 3.0) << std::endl;
-    std::cout << "Location of buy order at price 3.0: " << currentLOB.PriceLocation(-1, 3.0) << std::endl;
-    std::cout << "Location of sell order at price 1.0: " << currentLOB.PriceLocation(1, 1.0) << std::endl;
-    std::cout << "Location of buy order at price 1.0: " << currentLOB.PriceLocation(-1, 1.0) << std::endl;
-    std::cout << "Location of buy order at price 1.1: " << currentLOB.PriceLocation(-1, 1.1) << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::default_random_engine norm_generator;
+    std::normal_distribution<double> norm_distribution(0.0, vol_news);
 
-    std::cout << "Adding a sell limit order of price 3.2 and volume 3:" << std::endl;
-    currentLOB.AddLimitOrder(1, 3.2, 3);
-    currentLOB.PrintLOB();
-    std::cout << "===================================" << std::endl;
+    // initialise with an empty LOB
+    std::vector<LOB> snapshots(1);
+    std::vector<double> fundamental_prices(1, p0);
+    int tau = 0;
+    int delta = 0;
+    for (int t = 0; t < T; t++)
+    {
+        // reset gamma contract - calculate delta and gamma
+        // hedger.resetGammaContract()
+        for (int h = 0; h < H; h++)
+        {
+            // news arrives and fundamental price changesz
+            const double p_h = fundamental_prices[h];
+            fundamental_prices.push_back(p_h + norm_distribution(norm_generator));
+            for (int q = 0; q < Q; q++)
+            {
+                // generate the number of orders n
+                int N = 3;
+                // and the specs for each of the n orders
+                for (int n = 0; n < N; n++)
+                {
+                    // decay existing orders
+                    // update LOB to include the order
+                    // report what orders are exercised so that hedger knows his state
 
-    std::cout << "Adding a sell limit order of price 3.2 and volume 2:" << std::endl;
-    currentLOB.AddLimitOrder(1, 3.2, 3);
-    currentLOB.PrintLOB();
-    std::cout << "===================================" << std::endl;
+                    // hedger removes posted but unexecuted order (if any)
+                    // hedger submit orders based on current LOB, and LOB absorb hedger's order
+                }
 
-    std::vector<Bar> executed_orders;
-    double v_mo = 3;
-    std::cout << "A sell market order of volume " << v_mo << " arrives:" << std::endl;
-    double vwap = currentLOB.AbsorbMarketOrder(executed_orders, v_mo, 1);
-    currentLOB.PrintLOB();
-    std::cout << "Volumes of the not executed market order: " << v_mo << std::endl;
-    std::cout << "Volume-weighted-average price of the executed market order: " << vwap << std::endl;
-    std::cout << "===================================" << std::endl;
+                tau++;
+            }
+            // delta update from hedger's reevaluation, calculate gamma
+        }
+    }
 
-    v_mo = 10;
-    std::cout << "A buy market order of volume " << v_mo << " arrives:" << std::endl;
-    vwap = currentLOB.AbsorbMarketOrder(executed_orders, v_mo, -1);
-    currentLOB.PrintLOB();
-    std::cout << "Volumes of the not executed market order: " << v_mo << std::endl;
-    std::cout << "Volume-weighted-average price of the executed market order: " << vwap << std::endl;
-    std::cout << "Market failure? " << currentLOB.oneSideEmpty() << std::endl;
-    std::cout << "===================================" << std::endl;
+    // handle the final time (T, 0, 0)
 
     return 0;
 }
