@@ -13,4 +13,5 @@ add_subdirectory(tests)
 
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} lob_lib)
+target_link_libraries(${PROJECT_NAME} players_lib)
 target_link_libraries(${PROJECT_NAME} utils_lib)

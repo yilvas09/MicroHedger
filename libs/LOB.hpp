@@ -28,6 +28,8 @@ public:
                              double &v,             // [I] and [O] - input volume and outstanding volume
                              int s);
     void PrintLOB() const;
+    void DecayOrders(double d_coef);
+    int AbsorbGeneralOrder(int o_type, double p, double v);
 };
 
 #endif

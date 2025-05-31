@@ -2,6 +2,8 @@
 #include <vector>
 #include <random>
 #include "libs/LOB.hpp"
+#include "libs/Random.hpp"
+#include "libs/DeltaHedger.hpp"
 
 int main()
 {
@@ -12,46 +14,60 @@ int main()
 
     const double p0 = 1.0;
     const double vol_news = 1.0;
+    const double order_arrival_intensity = 1.0;
+    const double decay_coefficient = 0.5;
 
-    std::default_random_engine norm_generator;
-    std::normal_distribution<double> norm_distribution(0.0, vol_news);
-
-    // initialise with an empty LOB
-    std::vector<LOB> snapshots(1);
+    Random rd(1, vol_news, order_arrival_intensity);
+    DeltaHedger hedger(0.0, 0.0);
+    std::vector<LOB> snapshots(1); // initialise with an empty LOB
     std::vector<double> fundamental_prices(1, p0);
-    int tau = 0;
+
+    int tau = 0, tick = 0;
     int delta = 0;
     for (int t = 0; t < T; t++)
     {
         // reset gamma contract - calculate delta and gamma
-        // hedger.resetGammaContract()
+        hedger.ResetGammaContract();
         for (int h = 0; h < H; h++)
         {
             // news arrives and fundamental price changesz
             const double p_h = fundamental_prices[h];
-            fundamental_prices.push_back(p_h + norm_distribution(norm_generator));
+            fundamental_prices.push_back(rd.GenerateShockedPrice(p_h));
             for (int q = 0; q < Q; q++)
             {
-                // generate the number of orders n
-                int N = 3;
-                // and the specs for each of the n orders
+                // create a copy of current LOB - TODO check copy constructor
+                LOB currLOB = snapshots[tau];
+                // generate the number of orders n ~ Pois(lambda)
+                const int N = rd.GenerateNumOrders();
+                std::vector<int> exe_results;
                 for (int n = 0; n < N; n++)
                 {
-                    // decay existing orders
-                    // update LOB to include the order
-                    // report what orders are exercised so that hedger knows his state
-
-                    // hedger removes posted but unexecuted order (if any)
-                    // hedger submit orders based on current LOB, and LOB absorb hedger's order
+                    currLOB.DecayOrders(decay_coefficient); // decay existing orders
+                    double p = 0.0, v = 0.0;
+                    int order_type = -1;
+                    rd.GenerateOrder(order_type, p, v); // generate a new order
+                    // update LOB to include the order and report what orders are exercised
+                    int exe_res = currLOB.AbsorbGeneralOrder(order_type, p, v);
+                    exe_results.push_back(exe_res);
+                    tick++;
                 }
-
+                // based on execution results of this quarter hedger knows his state
+                // he then removes posted but unexecuted order (if any)
+                // and submit new order based on current LOB
+                double p_hedger = 0.0, v_hedger = 0.0;
+                int s_hedger = 0;
+                hedger.Act(p_hedger, v_hedger, s_hedger, exe_results);
+                // LOB absorb hedger's order
+                currLOB.AddLimitOrder(s_hedger, p_hedger, v_hedger);
+                // snapshot granularity is quarter-wise; not tick-wise yet
+                snapshots.push_back(currLOB);
+                std::cout << "tau = " << tau << "; t = " << t << ", h = " << h << ", q = " << q << std::endl;
                 tau++;
             }
             // delta update from hedger's reevaluation, calculate gamma
+            hedger.ReCalcDelta();
         }
     }
-
-    // handle the final time (T, 0, 0)
 
     return 0;
 }

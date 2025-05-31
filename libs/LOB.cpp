@@ -58,6 +58,8 @@ int LOB::PriceLocation(int s, double p) const
 // add a limit order of price p and volume v, with sign s (s = 1, an ask/sell order; s = -1, a bid/buy order)
 void LOB::AddLimitOrder(int s, double p, double v)
 {
+    if (s == 0)
+        return;
     int state = ContainsPrice(p); // 0 (no orders at p), 1 (sell orders at p), -1 (buy orders at p)
     state *= s;                   // 0 (insert new prices), 1 (increase vol in LOB), -1 (execute against existing bar)
     if (state == 0)               // insert a new bar with price p
@@ -151,4 +153,15 @@ void LOB::PrintLOB() const
     std::cout << title << std::endl;
     std::cout << p_row << std::endl;
     std::cout << v_row << std::endl;
+}
+
+// decay resting orders in current LOB with a decay coefficient
+void LOB::DecayOrders(double d_coef)
+{
+}
+
+// update LOB and add order based on order type
+int LOB::AbsorbGeneralOrder(int o_type, double p, double v)
+{
+    return 1;
 }
