@@ -11,8 +11,6 @@ LOB::LOB()
 LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
          const std::vector<double> &bps, const std::vector<double> &bvs)
 {
-    if (aps.size() != avs.size() || bps.size() != bvs.size())
-        throw std::invalid_argument("Price and volume vectors must have same size");
     for (int i = 0; i < 2; i++)
     {
         std::vector<double> ps_tmp = i == 0 ? aps : bps;
@@ -23,29 +21,6 @@ LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
         for (int j = 0; j < ps_tmp.size(); j++)
             bars.push_back(Bar(ps_tmp[j], vs_tmp[j]));
     }
-}
-
-// getter functions to obtain a specific bar in the lob
-const Bar &LOB::getBarAt(int s, int pos) const
-{
-    if (!s)
-        throw std::invalid_argument("Invalid sign; must be non-zero integer.");
-    const std::vector<Bar> &bars = s > 0 ? asks : bids;
-    int n_bars = static_cast<int>(bars.size());
-    if (pos >= n_bars || pos < -n_bars)
-        throw std::invalid_argument("Invalid bar position; out of boundary.");
-    std::vector<Bar>::const_iterator it_start = pos >= 0 ? bars.begin() : bars.end();
-    return *(it_start + pos);
-}
-
-double LOB::getVolumeAt(int s, int pos) const
-{
-    return getBarAt(s, pos).Volume();
-}
-
-double LOB::getPriceAt(int s, int pos) const
-{
-    return getBarAt(s, pos).Price();
 }
 
 // check whether the current LOB contains orders at price p; returns 1 (sell orders) or -1 (buy orders)
@@ -122,7 +97,10 @@ double LOB::AbsorbMarketOrder(std::vector<Bar> &eos,
                               int s)
 {
     if (s != -1 && s != 1)
-        throw std::invalid_argument("Invalid sign for market orders. Must be -1 or 1.");
+    {
+        std::cout << "LOB error: wrong sign for market orders. Must be -1 or 1." << std::endl;
+        return 0.0;
+    }
     eos.resize(0);
     double v_ttl = 0.0;
     double pos_ttl = 0.0;
@@ -180,17 +158,6 @@ void LOB::PrintLOB() const
 // decay resting orders in current LOB with a decay coefficient
 void LOB::DecayOrders(double d_coef)
 {
-    double p_mid = mid();
-    for (int i = 0; i < 2; i++)
-    {
-        auto &bars = i == 0 ? asks : bids;
-        for (auto &bar : bars)
-        {
-            double d_factor = exp(-d_coef * pow(p_mid - bar.Price(), 2));
-            // v = v * a = v + (a - 1) * v
-            bar.AddVolumesBy((d_factor - 1) * bar.Volume());
-        }
-    }
 }
 
 // update LOB and add order based on order type
