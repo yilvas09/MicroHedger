@@ -21,13 +21,18 @@ public:
     inline double mid() const { return (ask() + bid()) * 0.5; }
     inline bool oneSideEmpty() const { return !asks.size() || !bids.size(); }
 
-    void AddLimitOrder(int s, double p, double v);
+    const Bar &getBarAt(int s, int pos) const;
+    double getVolumeAt(int s, int pos) const;
+    double getPriceAt(int s, int pos) const;
+
     int ContainsPrice(double p) const;
     int PriceLocation(int s, double p) const;
+    void PrintLOB() const;
+
+    void AddLimitOrder(int s, double p, double v);
     double AbsorbMarketOrder(std::vector<Bar> &eos, // [O] - executed orders
                              double &v,             // [I] and [O] - input volume and outstanding volume
                              int s);
-    void PrintLOB() const;
     void DecayOrders(double d_coef);
     int AbsorbGeneralOrder(int o_type, double p, double v);
 };
