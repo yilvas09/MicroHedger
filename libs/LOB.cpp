@@ -195,9 +195,9 @@ void LOB::DecayOrders(double d_coef)
 // update LOB and add order based on order type
 std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, int s)
 {
-    if (s == 0)
-        return;
     std::vector<Bar> executed_orders;
+    if (s == 0)
+        return executed_orders;
     switch (o_type)
     {
     case LIMITORDER:
