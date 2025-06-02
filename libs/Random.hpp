@@ -2,6 +2,7 @@
 #define microhedger_utilities_random_hpp
 
 #include <random>
+#include "Utils.hpp"
 
 class Random
 {
@@ -19,7 +20,7 @@ public:
 
     double GenerateShockedPrice(double p_prev) const;
     int GenerateNumOrders() const;
-    void GenerateOrder(int &o_type, double &p, double &v) const;
+    void GenerateOrder(OrderType &o_type, double &p, double &v, int &s) const;
 };
 
 #endif

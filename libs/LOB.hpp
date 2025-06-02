@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Bar.hpp"
+#include "Utils.hpp"
 
 class LOB
 {
@@ -32,9 +33,13 @@ public:
     void AddLimitOrder(int s, double p, double v);
     double AbsorbMarketOrder(std::vector<Bar> &eos, // [O] - executed orders
                              double &v,             // [I] and [O] - input volume and outstanding volume
-                             int s);
+                             int s);                // [I] - sign of the market order
     void DecayOrders(double d_coef);
-    int AbsorbGeneralOrder(int o_type, double p, double v);
+    std::vector<Bar> AbsorbGeneralOrder(OrderType o_type, // [I] - order type
+                                        double p,         // [I] - price of order
+                                        double v,         // [I] - volume of order
+                                        int s             // [I] - sign of order
+    );
 };
 
 #endif

@@ -13,4 +13,10 @@ public:
     static void sortPairedVectors(std::vector<double> &A, std::vector<double> &B);
 };
 
+enum OrderType
+{
+    LIMITORDER = 0,
+    MARKETORDER = 1
+};
+
 #endif
