@@ -206,7 +206,7 @@ std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, i
         LOB orig_lob(*this);
         // existing orders only get executed when an order on the other side comes
         const std::vector<Bar> &orig_bars_other_side = s > 0 ? orig_lob.bids : orig_lob.asks;
-
+        int s_other_side = -s;
         AddLimitOrder(s, p, v);
 
         /*
@@ -222,12 +222,12 @@ std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, i
             double orig_p = o_bar.Price();
             double orig_v = o_bar.Volume();
             int contains_p = ContainsPrice(orig_p);
-            if ((contains_p * s == 0)    // no bar at this price
-                || (contains_p * s < 0)) // bar with same price at the opposite
+            if ((contains_p * s_other_side == 0)    // no bar at this price
+                || (contains_p * s_other_side < 0)) // bar with same price at the opposite
                 executed_orders.push_back(o_bar);
             else // bar on the same side
             {
-                double curr_v = getVolumeAt(s, PriceLocation(s, orig_p));
+                double curr_v = getVolumeAt(s_other_side, PriceLocation(s_other_side, orig_p));
                 double diff_v = orig_v - curr_v;
                 if (diff_v > __DBL_EPSILON__)
                     executed_orders.push_back(Bar(orig_p, diff_v));

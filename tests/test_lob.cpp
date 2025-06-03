@@ -423,6 +423,106 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_multiple_levels)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(LOBAbsorbGeneralOrderTests)
+
+BOOST_AUTO_TEST_CASE(test_absorb_general_order_mo)
+{
+    std::vector<double> ask_prices = {101.0};
+    std::vector<double> ask_volumes = {50.0};
+    std::vector<double> bid_prices = {99.0};
+    std::vector<double> bid_volumes = {150.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+
+    std::vector<Bar> executed_orders;
+    OrderType o_type = MARKETORDER;
+    double volume = 100.0; // buy 100 shares, but only 50 shares are available
+
+    executed_orders = lob.AbsorbGeneralOrder(o_type, 0.0, volume, -1);
+
+    BOOST_CHECK_EQUAL(executed_orders.size(), 1);
+    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 50.0, EPSILON);
+}
+
+// TODO: invalid inpur, s=0
+
+BOOST_AUTO_TEST_CASE(test_absorb_general_order_same_side_lo_price_exists)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
+    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    OrderType o_type = LIMITORDER;
+
+    double p_new = 102.0, v_new = 50.0;
+    int s_new = 1;
+    std::vector<Bar> eos = lob.AbsorbGeneralOrder(o_type, p_new, v_new, s_new);
+
+    BOOST_CHECK_EQUAL(eos.size(), 0);
+    BOOST_CHECK_CLOSE(lob.getVolumeAt(s_new, lob.PriceLocation(s_new, p_new)), 250.0, EPSILON);
+}
+
+BOOST_AUTO_TEST_CASE(test_absorb_general_order_same_side_lo_new_price)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
+    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    OrderType o_type = LIMITORDER;
+
+    double p_new = 100.0, v_new = 50.0, s_new = -1;
+    std::vector<Bar> eos = lob.AbsorbGeneralOrder(o_type, p_new, v_new, s_new);
+
+    BOOST_CHECK_EQUAL(eos.size(), 0);
+    BOOST_CHECK_CLOSE(lob.getVolumeAt(s_new, lob.PriceLocation(s_new, p_new)), 50.0, EPSILON);
+}
+
+BOOST_AUTO_TEST_CASE(test_absorb_general_order_other_side_lo_fully_exe)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
+    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    OrderType o_type = LIMITORDER;
+
+    double p_new = 101.0, v_new = 50.0, s_new = -1;
+    std::vector<Bar> eos = lob.AbsorbGeneralOrder(o_type, p_new, v_new, s_new);
+
+    BOOST_CHECK_EQUAL(eos.size(), 1);
+    BOOST_CHECK_CLOSE(eos[0].Volume(), v_new, EPSILON);
+    // the new buy LO is absorbed by existing sell LO and fully executed
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(p_new), 1);
+    BOOST_CHECK_CLOSE(lob.getVolumeAt(-s_new, lob.PriceLocation(-s_new, p_new)), 50.0, EPSILON);
+}
+
+BOOST_AUTO_TEST_CASE(test_absorb_general_order_other_side_lo_part_exe)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
+    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    OrderType o_type = LIMITORDER;
+
+    double p_new = 99.0, v_new = 250.0, s_new = 1;
+    std::vector<Bar> eos = lob.AbsorbGeneralOrder(o_type, p_new, v_new, s_new);
+
+    BOOST_CHECK_EQUAL(eos.size(), 1);
+    BOOST_CHECK_CLOSE(eos[0].Volume(), 150.0, EPSILON);
+    // the new buy LO is absorbed by existing sell LO and partly executed
+    // outstanding volumes are posted on the other side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(p_new), 1);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 // integrated testing under various scenarios
 BOOST_AUTO_TEST_SUITE(LOBIntegrationTests)
 
