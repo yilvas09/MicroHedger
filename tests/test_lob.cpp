@@ -160,6 +160,24 @@ BOOST_AUTO_TEST_CASE(test_add_volume_to_existing_price)
     BOOST_CHECK_CLOSE(lob.getVolumeAt(1, 0), 150.0, EPSILON);
 }
 
+BOOST_AUTO_TEST_CASE(test_add_orders_other_side)
+{
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+
+    lob.AddLimitOrder(-1, 101.0, 50.0); // buy order at ask price
+    BOOST_CHECK_CLOSE(lob.getVolumeAt(1, lob.PriceLocation(1, 101.0)), 100.0, EPSILON);
+
+    lob.AddLimitOrder(-1, 101.0, 100.0);          // buy order at ask price
+    BOOST_CHECK_CLOSE(lob.ask(), 102.0, EPSILON); // the 101 bar is gone
+
+    // cannot post orders at a price higher than ask price
+    BOOST_CHECK_THROW(lob.AddLimitOrder(-1, 103.0, 50.0), std::invalid_argument);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 // test LOB::AbsorbMarketOrder

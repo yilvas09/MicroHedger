@@ -101,6 +101,10 @@ void LOB::AddLimitOrder(int s, double p, double v)
     }
     else // exists a bar at price p on the other side of the book -> execute against the bar
     {
+        // safety measure: make sure 2 sides never cross
+        if ((s > 0 && p < bid()) || (s < 0 && p > ask()))
+            throw std::invalid_argument("Cannot post sell/buy limit order greater than bid/ask price!");
+
         std::vector<Bar> &bars_other_side = s > 0 ? bids : asks;
         std::vector<Bar>::iterator it = bars_other_side.begin() + PriceLocation(-s, p);
         auto &bar = *(it);
