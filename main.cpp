@@ -39,15 +39,16 @@ int main()
                 LOB currLOB = snapshots[tau];
                 // generate the number of orders n ~ Pois(lambda)
                 const int N = rd.GenerateNumOrders();
-                std::vector<int> exe_results;
+                std::vector<std::vector<Bar>> exe_results;
                 for (int n = 0; n < N; n++)
                 {
                     currLOB.DecayOrders(decay_coefficient); // decay existing orders
                     double p = 0.0, v = 0.0;
-                    int order_type = -1;
-                    rd.GenerateOrder(order_type, p, v); // generate a new order
+                    int s = 0;
+                    enum OrderType order_type;
+                    rd.GenerateOrder(order_type, p, v, s); // generate a new order
                     // update LOB to include the order and report what orders are exercised
-                    int exe_res = currLOB.AbsorbGeneralOrder(order_type, p, v);
+                    std::vector<Bar> exe_res = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
                     exe_results.push_back(exe_res);
                     tick++;
                 }

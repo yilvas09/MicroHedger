@@ -8,6 +8,6 @@ void DeltaHedger::ReCalcDelta()
 {
 }
 
-void DeltaHedger::Act(double &p, double &v, int &s, const std::vector<int> &info)
+void DeltaHedger::Act(double &p, double &v, int &s, const std::vector<std::vector<Bar>> &info)
 {
 }

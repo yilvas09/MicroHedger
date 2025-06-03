@@ -2,6 +2,7 @@
 #define microhedger_player_dynamic_hedger_hpp
 
 #include <vector>
+#include "Bar.hpp"
 
 class DeltaHedger
 {
@@ -21,7 +22,7 @@ public:
     void Act(double &p,                             // [O] - price of hedger's order
              double &v,                             // [O] - volume of hedger's order
              int &s,                                // [O] - sign of hedger's order
-             const std::vector<int> &available_info // [I] - executed orders
+             const std::vector<std::vector<Bar>> &available_info // [I] - executed orders
     );
 };
 
