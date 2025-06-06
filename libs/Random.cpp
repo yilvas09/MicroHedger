@@ -5,24 +5,24 @@ Random::Random(int _seed,
                double _order_intensity,
                double _prob_otype,
                double _prob_info,
-               double _vol_min, double _vol_max,
+               double _v_min, double _v_max,
                double _mean_spread, double _vol_spread)
     : seed(_seed),
       vol_news(_vol_news),
       order_intensity(_order_intensity),
       prob_otype(_prob_otype),
       prob_info(_prob_info),
-      vol_min(_vol_min),
-      vol_max(_vol_max),
+      v_min(_v_min),
+      v_max(_v_max),
       mean_spread(_mean_spread),
       vol_spread(_vol_spread),
       prob_sign(0.5),
-      generator(std::default_random_engine()),
+      generator(std::default_random_engine(seed)),
       norm_dist_p_shock(std::normal_distribution<double>(0.0, vol_news)),
       pois_dist_onum(std::poisson_distribution<int>(order_intensity)),
       ber_dist_otype(std::bernoulli_distribution(prob_otype)),
       ber_dist_info(std::bernoulli_distribution(prob_info)),
-      uni_dist_v_mm(std::uniform_real_distribution<double>(vol_min, vol_max)),
+      uni_dist_v_mm(std::uniform_real_distribution<double>(v_min, v_max)),
       norm_dist_p_mm(std::normal_distribution<double>(mean_spread, vol_spread)),
       ber_dist_sign(std::bernoulli_distribution(prob_sign))
 {
@@ -45,7 +45,7 @@ void Random::GenerateOrder(OrderType &o_type, // [O] - LIMITORDER or MARKETORDER
                            double p_mid,      // [I] - mid price of the LOB for uninformed agents
                            double p_fund)     // [I] - current fundamental price for informed agents
 {
-    o_type = ber_dist_otype(generator) >= prob_otype ? MARKETORDER : LIMITORDER;
+    o_type = ber_dist_otype(generator) ? LIMITORDER : MARKETORDER;
     v = uni_dist_v_mm(generator);
     bool informed = ber_dist_info(generator);
     switch (o_type)

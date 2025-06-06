@@ -13,7 +13,7 @@ private:
     double order_intensity;
     double prob_otype;
     double prob_info;
-    double vol_min, vol_max;
+    double v_min, v_max;
     double mean_spread, vol_spread;
     double prob_sign;
 
@@ -32,7 +32,7 @@ public:
            double _order_intensity,
            double _prob_otype,
            double _prob_info,
-           double _vol_min, double _vol_max,
+           double _v_min, double _v_max,
            double _mean_spread, double _vol_spread);
     ~Random() {}
 
