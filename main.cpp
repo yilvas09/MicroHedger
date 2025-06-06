@@ -11,13 +11,21 @@ int main()
     const int H = 2;
     const int Q = 5;
     const int total_time = T * H * Q;
+    const int seed = 1;
 
-    const double p0 = 1.0;
+    const double p0 = 10.0;
     const double vol_news = 1.0;
     const double order_arrival_intensity = 1.0;
     const double decay_coefficient = 0.5;
+    const double p_otype = 0.5;
+    const double p_info = 0.5;
+    const double vol_min = 0;
+    const double vol_max = 10;
+    const double m_spr = 0.05;
+    const double v_spr = 0.1;
 
-    Random rd(1, vol_news, order_arrival_intensity);
+    Random rd(seed, vol_news, order_arrival_intensity,
+              p_otype, p_info, vol_min, vol_max, m_spr, v_spr);
     DeltaHedger hedger(0.0, 0.0);
     std::vector<LOB> snapshots(1); // initialise with an empty LOB
     std::vector<double> fundamental_prices(1, p0);
@@ -46,7 +54,7 @@ int main()
                     double p = 0.0, v = 0.0;
                     int s = 0;
                     enum OrderType order_type;
-                    rd.GenerateOrder(order_type, p, v, s); // generate a new order
+                    rd.GenerateOrder(order_type, p, v, s, currLOB.mid(), p_h); // generate a new order
                     // update LOB to include the order and report what orders are exercised
                     std::vector<Bar> exe_res = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
                     exe_results.push_back(exe_res);

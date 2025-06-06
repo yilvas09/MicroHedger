@@ -8,19 +8,42 @@ class Random
 {
 private:
     int seed;
+
+    double vol_news;
+    double order_intensity;
+    double prob_otype;
+    double prob_info;
+    double v_min, v_max;
+    double mean_spread, vol_spread;
+    double prob_sign;
+
     std::default_random_engine generator;
-    std::normal_distribution<double> norm_dist;
-    std::poisson_distribution<int> pois_dist;
+    std::normal_distribution<double> norm_dist_p_shock;   // news shocks on fundamental price
+    std::poisson_distribution<int> pois_dist_onum;        // number of orders at each subinterval
+    std::bernoulli_distribution ber_dist_otype;           // type of external orders
+    std::bernoulli_distribution ber_dist_info;            // portions of informed/uninformed external orders
+    std::uniform_real_distribution<double> uni_dist_v_mm; // volumes of external orders
+    std::normal_distribution<double> norm_dist_p_mm;      // spread prices of external orders from market makers
+    std::bernoulli_distribution ber_dist_sign;            // sign of external orders
 
 public:
     Random(int _seed,
            double _vol_news,
-           double _order_intensity);
+           double _order_intensity,
+           double _prob_otype,
+           double _prob_info,
+           double _v_min, double _v_max,
+           double _mean_spread, double _vol_spread);
     ~Random() {}
 
-    double GenerateShockedPrice(double p_prev) const;
-    int GenerateNumOrders() const;
-    void GenerateOrder(OrderType &o_type, double &p, double &v, int &s) const;
+    double GenerateShockedPrice(double p_prev);
+    int GenerateNumOrders();
+    void GenerateOrder(OrderType &o_type, // [O] - LIMITORDER or MARKETORDER
+                       double &p,         // [O] - price of the external order
+                       double &v,         // [O] - volume of the external order
+                       int &s,            // [O] - sign of the external order
+                       double p_mid,      // [I] - mid price of the LOB for uninformed agents
+                       double p_fund);    // [I] - current fundamental price for informed agents
 };
 
 #endif
