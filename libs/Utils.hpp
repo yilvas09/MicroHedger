@@ -11,6 +11,8 @@ public:
     ~Utils() {}
 
     static void sortPairedVectors(std::vector<double> &A, std::vector<double> &B);
+    static double normalCDF(double x);
+    static double normalPDF(double x);
 };
 
 enum OrderType
