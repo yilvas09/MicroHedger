@@ -10,12 +10,14 @@ private:
     double t_incept;
     double t_mat;
     double strike;
+    double position;
 
 public:
     Option(OptionType _type,
            double _t_incept,
            double _t_mat,
-           double _strike);
+           double _strike,
+           double _pos);
     ~Option() {}
 
     double Delta(double vol, double spot, double t) const;

@@ -3,11 +3,13 @@
 Option::Option(OptionType _type,
                double _t_incept,
                double _t_mat,
-               double _strike)
+               double _strike,
+               double _pos)
     : type(_type),
       t_incept(_t_incept),
       t_mat(_t_mat),
-      strike(_strike)
+      strike(_strike),
+      position(_pos)
 {
 }
 
@@ -25,7 +27,7 @@ double Option::Delta(double vol, double spot, double t) const
     default:
         throw std::invalid_argument("This option type is not implemented.");
     }
-    return delta;
+    return delta * position;
 }
 
 double Option::Gamma(double vol, double spot, double t) const
@@ -43,5 +45,5 @@ double Option::Gamma(double vol, double spot, double t) const
     default:
         throw std::invalid_argument("This option type is not implemented.");
     }
-    return gamma;
+    return gamma * position;
 }
