@@ -21,4 +21,11 @@ enum OrderType
     MARKETORDER = 1
 };
 
+enum OptionType
+{
+    CALL = 0,
+    PUT = 1,
+    STRADDLE = 2
+};
+
 #endif
