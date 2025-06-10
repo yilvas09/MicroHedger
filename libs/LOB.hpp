@@ -21,6 +21,7 @@ public:
     inline double ask() const { return asks.size() ? asks.front().Price() : 0.0; }
     inline double mid() const { return (ask() + bid()) * 0.5; }
     inline bool oneSideEmpty() const { return !asks.size() || !bids.size(); }
+    inline bool bothSidesEmpty() const { return !asks.size() && !asks.size(); }
 
     const Bar &getBarAt(int s, int pos) const;
     double getVolumeAt(int s, int pos) const;
