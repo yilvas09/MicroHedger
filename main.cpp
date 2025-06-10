@@ -13,7 +13,12 @@ int main()
     const int total_time = T * H * Q;
     const int seed = 1;
 
-    const double p0 = 10.0;
+    const double p0 = 5.0;
+    const std::vector<double> aps0 = {5.02, 5.04, 5.06};
+    const std::vector<double> avs0(aps0.size(), 10.0);
+    const std::vector<double> bps0 = {4.94, 4.96, 4.98};
+    const std::vector<double> bvs0(bps0.size(), 10.0);
+    const LOB lob0(aps0, avs0, bps0, bvs0);
     const double vol_news = 1.0;
     const double order_arrival_intensity = 1.0;
     const double decay_coefficient = 0.5;
@@ -23,19 +28,23 @@ int main()
     const double vol_max = 10;
     const double m_spr = 0.05;
     const double v_spr = 0.1;
+    const double option_pos = 10;
+    const double implied_vol = vol_news;
 
     Random rd(seed, vol_news, order_arrival_intensity,
               p_otype, p_info, vol_min, vol_max, m_spr, v_spr);
-    DeltaHedger hedger(0.0, 0.0);
-    std::vector<LOB> snapshots(1); // initialise with an empty LOB
+    DeltaHedger hedger(option_pos, implied_vol);
+    std::vector<LOB> snapshots(1, lob0);
     std::vector<double> fundamental_prices(1, p0);
 
     int tau = 0, tick = 0;
     int delta = 0;
+    double time = 0.0;
     for (int t = 0; t < T; t++)
     {
         // reset gamma contract - calculate delta and gamma
-        hedger.ResetGammaContract();
+        time = t;
+        hedger.ResetGammaContract(time, snapshots.back());
         for (int h = 0; h < H; h++)
         {
             // news arrives and fundamental price changesz
@@ -44,7 +53,7 @@ int main()
             for (int q = 0; q < Q; q++)
             {
                 // create a copy of current LOB - TODO check copy constructor
-                LOB currLOB = snapshots[tau];
+                LOB currLOB(snapshots.back());
                 // generate the number of orders n ~ Pois(lambda)
                 const int N = rd.GenerateNumOrders();
                 std::vector<std::vector<Bar>> exe_results;
@@ -74,7 +83,8 @@ int main()
                 tau++;
             }
             // delta update from hedger's reevaluation, calculate gamma
-            hedger.ReCalcDelta();
+            time = t + (h + 1) * 1. / H;
+            hedger.ReCalcGreeks(time, snapshots.back());
         }
     }
 
