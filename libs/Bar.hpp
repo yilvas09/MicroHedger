@@ -17,6 +17,7 @@ public:
 
     inline double Price() const { return price; }
     inline double Volume() const { return volume; }
+    inline bool IsEmptyBar() const { return abs(price) < __DBL_EPSILON__; }
 
     int ExecuteAgainst(double &v);
     void AddVolumesBy(double v);
