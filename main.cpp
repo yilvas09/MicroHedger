@@ -56,17 +56,17 @@ int main()
                 LOB currLOB(snapshots.back());
                 // generate the number of orders n ~ Pois(lambda)
                 const int N = rd.GenerateNumOrders();
-                std::vector<std::vector<Bar>> exe_results;
+                std::vector<std::vector<Bar>> exe_orders;
                 for (int n = 0; n < N; n++)
                 {
-                    currLOB.DecayOrders(decay_coefficient); // decay existing orders
+                    currLOB.DecayOrders(decay_coefficient); // decay existing orders (removed, not executed)
                     double p = 0.0, v = 0.0;
                     int s = 0;
                     enum OrderType order_type;
                     rd.GenerateOrder(order_type, p, v, s, currLOB.mid(), p_h); // generate a new order
                     // update LOB to include the order and report what orders are exercised
-                    std::vector<Bar> exe_res = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
-                    exe_results.push_back(exe_res);
+                    std::vector<Bar> exe_order = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
+                    exe_orders.push_back(exe_order);
                     tick++;
                 }
                 // based on execution results of this quarter hedger knows his state
@@ -74,7 +74,7 @@ int main()
                 // and submit new order based on current LOB
                 double p_hedger = 0.0, v_hedger = 0.0;
                 int s_hedger = 0;
-                hedger.Act(p_hedger, v_hedger, s_hedger, exe_results);
+                hedger.Act(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, (double)q / Q);
                 // LOB absorb hedger's order
                 currLOB.AddLimitOrder(s_hedger, p_hedger, v_hedger);
                 // snapshot granularity is quarter-wise; not tick-wise yet

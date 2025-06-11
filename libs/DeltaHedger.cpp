@@ -23,7 +23,9 @@ void DeltaHedger::ResetGammaContract(double time, const LOB &currLOB)
     // clear inventories from previous trading session
     stocks.resize(0);
     options.resize(0);
-    // buy/sell ATM straddles maturing 2 days later 
+    // clear outstanding orders
+    outstanding_order = Bar();
+    // buy/sell ATM straddles maturing 2 days later
     double spot = currLOB.mid();
     options.push_back(Option(STRADDLE, time, time + 2., spot, opt_pos));
     // update greeks
@@ -36,6 +38,75 @@ void DeltaHedger::ReCalcGreeks(double time, const LOB &currLOB)
     gamma = Gamma(implied_vol, currLOB, time);
 }
 
-void DeltaHedger::Act(double &p, double &v, int &s, const std::vector<std::vector<Bar>> &info)
+// hedger needs to know whether his own order posted, a bar with signed volume, is executed
+// by going through all orders executed (eos) within this sub-trading interval
+bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos)
 {
+    bool is_exe = false;
+    // if there's no outstanding order, i.e. empty bar
+    // the function does not go into this if-branch
+    // and false is returned
+    if (!outstanding_order.IsEmptyBar())
+    {
+        for (auto &os : eos)
+        {
+            for (auto &o : os)
+            {
+                // compare order o with outstanding order
+                if (abs(o.Price() - outstanding_order.Price()) < __DBL_EPSILON__)
+                {
+                    double exe_v = std::min(o.Volume(), outstanding_order.Volume());
+                    outstanding_order.AddVolumesBy(-exe_v);
+                    if (abs(outstanding_order.Volume()) < __DBL_EPSILON__)
+                        is_exe = true;
+                }
+            }
+        }
+    }
+    return is_exe;
+}
+
+// based on execution results of this quarter hedger knows his state
+// he then removes posted but unexecuted order (if any)
+// and submit new order based on current LOB
+void DeltaHedger::Act(double &p,
+                      double &v,
+                      int &s,
+                      const std::vector<std::vector<Bar>> &eos,
+                      const LOB &currLOB,
+                      double t_q)
+{
+    if (abs(delta) < __DBL_EPSILON__)
+        return;
+    bool isOrderExecuted = IsMyOrderExecuted(eos);
+    if (!outstanding_order.IsEmptyBar() && isOrderExecuted)
+    {
+        // we don't post order if
+        // 1. we have posted order before (oustanding order not empty)
+        // 2. AND it's executed
+        Bar bar(outstanding_order.Price(), -outstanding_order.Volume());
+        stocks.push_back(bar); // update inventories
+    }
+    else
+    {
+        // we post order if
+        // 1. we haven't posted before (oustanding order not empty) and delta not zero
+        // 2. OR the posted one is not executed
+        double ba_spr = currLOB.ask() - currLOB.bid();
+        s = delta > 0 ? 1 : -1; // sell stock if delta > 0, buy if < 0
+        v = abs(delta);         // this can be replaced by v = delta when refactoring
+        p = s > 0 ? currLOB.ask() : currLOB.bid();
+        // from passive to aggresive
+        if (t_q <= 0.25)
+            p += s * ba_spr; // p = pb - spr (buy) or pa + spr (sell)
+        else if (t_q <= 0.5)
+            ; // do nothing, p = pb (buy) or pa (sell)
+        else if (t_q <= 0.75)
+            p -= s * 0.5 * ba_spr; // p = pb + 0.5spr (buy) or pa - 0.5spr (sell)
+        else
+            p -= s * ba_spr; // p = pa (buy) or pb (sell)
+
+        // record posted order
+        outstanding_order = Bar(p, s * v);
+    }
 }

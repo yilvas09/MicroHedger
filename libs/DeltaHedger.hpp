@@ -10,10 +10,12 @@ class DeltaHedger
 private:
     double delta;
     double gamma;
-    
+
     const double opt_pos;
     const double implied_vol;
 
+    Bar outstanding_order;
+    // inventories
     std::vector<Bar> stocks;
     std::vector<Option> options;
 
@@ -23,13 +25,16 @@ public:
 
     double Delta(double vol, const LOB &currLOB, double time) const;
     double Gamma(double vol, const LOB &currLOB, double time) const;
+    bool IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos);
 
     void ResetGammaContract(double time, const LOB &currLOB);
     void ReCalcGreeks(double time, const LOB &currLOB);
-    void Act(double &p,                                          // [O] - price of hedger's order
-             double &v,                                          // [O] - volume of hedger's order
-             int &s,                                             // [O] - sign of hedger's order
-             const std::vector<std::vector<Bar>> &available_info // [I] - executed orders
+    void Act(double &p,                                           // [O] - price of hedger's order
+             double &v,                                           // [O] - volume of hedger's order
+             int &s,                                              // [O] - sign of hedger's order
+             const std::vector<std::vector<Bar>> &available_info, // [I] - executed orders
+             const LOB& currLOB,                                  // [I] - current lob
+             double t_q                                           // [I] - frac of current quarter / hour
     );
 };
 
