@@ -17,6 +17,13 @@ BOOST_AUTO_TEST_CASE(test_constructor)
     BOOST_CHECK(true); // If we reach here, constructor worked
 }
 
+BOOST_AUTO_TEST_CASE(test_default_constructor)
+{
+    Option option;
+    // Constructor should not throw and object should be created successfully
+    BOOST_CHECK(true); // If we reach here, constructor worked
+}
+
 BOOST_AUTO_TEST_CASE(test_constructor_negative_times)
 {
     // Test with negative inception time

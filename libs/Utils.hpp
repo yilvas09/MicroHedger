@@ -25,7 +25,8 @@ enum OptionType
 {
     CALL = 0,
     PUT = 1,
-    STRADDLE = 2
+    STRADDLE = 2,
+    INVALID = 999
 };
 
 #endif

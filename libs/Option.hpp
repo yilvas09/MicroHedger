@@ -18,6 +18,7 @@ public:
            double _t_mat,
            double _strike,
            double _pos);
+    Option() { Option(INVALID, 0.0, 0.0, 0.0, 0.0); }
     ~Option() {}
 
     double Delta(double vol, double spot, double t) const;
