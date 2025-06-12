@@ -42,7 +42,6 @@ void DeltaHedger::ReCalcGreeks(double time, const LOB &currLOB)
 // by going through all orders executed (eos) within this sub-trading interval
 bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos)
 {
-    bool is_exe = false;
     // if there's no outstanding order, i.e. empty bar
     // the function does not go into this if-branch
     // and false is returned
@@ -53,17 +52,20 @@ bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos)
             for (auto &o : os)
             {
                 // compare order o with outstanding order
-                if (abs(o.Price() - outstanding_order.Price()) < __DBL_EPSILON__)
+                bool same_p = abs(o.Price() - outstanding_order.Price()) < __DBL_EPSILON__;
+                bool same_s = o.Volume() * outstanding_order.Volume() > 0;
+                if (same_p && same_s)
                 {
-                    double exe_v = std::min(o.Volume(), outstanding_order.Volume());
+                    double ov = o.Volume(), oov = outstanding_order.Volume();
+                    double exe_v = ov > 0 ? std::min(ov, oov) : std::max(ov, oov);
                     outstanding_order.AddVolumesBy(-exe_v);
                     if (abs(outstanding_order.Volume()) < __DBL_EPSILON__)
-                        is_exe = true;
+                        return true;
                 }
             }
         }
     }
-    return is_exe;
+    return false;
 }
 
 // based on execution results of this quarter hedger knows his state
