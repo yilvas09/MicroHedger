@@ -61,7 +61,7 @@ int main()
                 {
                     currLOB.DecayOrders(decay_coefficient); // decay existing orders (removed, not executed)
                     double p = 0.0, v = 0.0;
-                    int s = 0;
+                    int s = 0; // sell: 1, buy: -1
                     enum OrderType order_type;
                     rd.GenerateOrder(order_type, p, v, s, currLOB.mid(), p_h); // generate a new order
                     // update LOB to include the order and report what orders are exercised
