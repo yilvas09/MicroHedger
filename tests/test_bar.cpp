@@ -15,6 +15,8 @@ BOOST_AUTO_TEST_CASE(test_default_constructor)
     BOOST_CHECK_CLOSE(bar.Price(), 0.0, EPSILON);
     BOOST_CHECK_CLOSE(bar.Volume(), 0.0, EPSILON);
     BOOST_CHECK_EQUAL(bar.IsEmptyBar(), TRUE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), TRUE);
+    BOOST_CHECK_EQUAL(bar.IsEmpty(), TRUE);
 }
 
 BOOST_AUTO_TEST_CASE(test_parameterized_constructor)
@@ -23,6 +25,12 @@ BOOST_AUTO_TEST_CASE(test_parameterized_constructor)
     BOOST_CHECK_CLOSE(bar.Price(), 100.5, EPSILON);
     BOOST_CHECK_CLOSE(bar.Volume(), 250.0, EPSILON);
     BOOST_CHECK_EQUAL(bar.IsEmptyBar(), FALSE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), FALSE);
+
+    bar = Bar(100.5, 0.0);
+    BOOST_CHECK_EQUAL(bar.IsEmptyBar(), FALSE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), TRUE);
+    BOOST_CHECK_EQUAL(bar.IsEmpty(), FALSE);
 }
 
 BOOST_AUTO_TEST_CASE(test_negative_values)
