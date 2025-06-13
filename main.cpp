@@ -69,21 +69,26 @@ int main()
                     exe_orders.push_back(exe_order);
                     tick++;
                 }
+
                 // based on execution results of this quarter hedger knows his state
-                // he then removes posted but unexecuted order (if any)
-                // and submit new order based on current LOB
-                double p_hedger = 0.0, v_hedger = 0.0;
-                int s_hedger = 0;
-                hedger.PostOrder(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, (double)q / Q);
-
-                // LOB absorb hedger's order
-                std::vector<Bar> exe_order_hedger = currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, s_hedger);
-
-                // hedger updates inventories
-                hedger.UpdateInventories(exe_order_hedger);
-                // and cancels his order if not executed
-                // if(!exe_order_hedger.size())
-                    // currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, -s_hedger);
+                if (!hedger.IsMyOrderExecuted(exe_orders))
+                {
+                    // he either removes posted but unexecuted order (if any)
+                    currLOB.CancelLimitOrder(Utils::sgn(hedger.getOrderVolume()), hedger.getOrderPrice(), abs(hedger.getOrderVolume()));
+                    // and submit new order based on current LOB
+                    double p_hedger = 0.0, v_hedger = 0.0;
+                    int s_hedger = 0;
+                    hedger.PostOrder(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, (double)q / Q);
+                    // LOB absorb hedger's order
+                    std::vector<Bar> exe_order_hedger = currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, s_hedger);
+                    // hedger updates inventories
+                    hedger.UpdateInventories(std::vector<std::vector<Bar>>(1, exe_order_hedger));
+                }
+                else
+                {
+                    // or he updates his inventories
+                    hedger.UpdateInventories(exe_orders);
+                }
 
                 // snapshot granularity is quarter-wise; not tick-wise yet
                 snapshots.push_back(currLOB);

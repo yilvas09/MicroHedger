@@ -48,6 +48,8 @@ bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos) co
     if (!outstanding_order.IsEmptyBar())
     {
         double oov = outstanding_order.Volume();
+        if (abs(oov) < __DBL_EPSILON__)
+            return true;
         for (auto &os : eos)
         {
             for (auto &o : os)
@@ -73,11 +75,11 @@ bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos) co
 // he then removes posted but unexecuted order (if any)
 // and submit new order based on current LOB
 void DeltaHedger::PostOrder(double &p,
-                      double &v,
-                      int &s,
-                      const std::vector<std::vector<Bar>> &eos,
-                      const LOB &currLOB,
-                      double t_q)
+                            double &v,
+                            int &s,
+                            const std::vector<std::vector<Bar>> &eos,
+                            const LOB &currLOB,
+                            double t_q)
 {
     if (abs(delta) < __DBL_EPSILON__)
         return;
@@ -109,9 +111,10 @@ void DeltaHedger::PostOrder(double &p,
 void DeltaHedger::UpdateInventories(const std::vector<std::vector<Bar>> &eos)
 {
     bool isOrderExecuted = IsMyOrderExecuted(eos);
-    if(!outstanding_order.IsEmptyBar() && isOrderExecuted)
+    if (!outstanding_order.IsEmptyBar() && !outstanding_order.IsEmptyVolume() && isOrderExecuted)
     {
         Bar bar(outstanding_order.Price(), -outstanding_order.Volume());
-        stocks.push_back(bar); // update inventories
+        stocks.push_back(bar);                                   // update inventories
+        outstanding_order = Bar(outstanding_order.Price(), 0.0); // reset order
     }
 }
