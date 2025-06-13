@@ -180,6 +180,51 @@ BOOST_AUTO_TEST_CASE(test_add_orders_other_side)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(LOBCancelLimitOrderTests)
+
+BOOST_AUTO_TEST_CASE(test_cancel_ask_order_partial)
+{
+
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+
+    lob.CancelLimitOrder(1, 101.0, 50.0);
+    BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON); // lowest ask should be 101
+    BOOST_CHECK_CLOSE(lob.getVolumeAt(1, lob.PriceLocation(1,101.0)), 100.0, EPSILON);
+}
+
+BOOST_AUTO_TEST_CASE(test_cancel_ask_order_full)
+{
+
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+
+    lob.CancelLimitOrder(1, 101.0, 150.0);
+    BOOST_CHECK_CLOSE(lob.ask(), 102.0, EPSILON); // bar at 101 is removed
+}
+
+BOOST_AUTO_TEST_CASE(test_cancel_limit_order_skip)
+{
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON); // no bid orders
+
+    lob.CancelLimitOrder(-1, 101.0, 150.0);
+    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON); // still no bid orders
+    BOOST_CHECK(true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 // test LOB::AbsorbMarketOrder
 BOOST_AUTO_TEST_SUITE(LOBAbsorbMarketOrderTests)
 
@@ -197,7 +242,7 @@ BOOST_AUTO_TEST_CASE(test_market_buy_order_partial_execution)
 
     double vwap = lob.AbsorbMarketOrder(executed_orders, volume, -1);
 
-    // should execute 100 at 101.0 and 50 at 102.0
+    // should execute sell orders 100 at 101.0 and 50 at 102.0
     BOOST_CHECK_EQUAL(executed_orders.size(), 2);
     BOOST_CHECK_CLOSE(executed_orders[0].Price(), 101.0, EPSILON);
     BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 100.0, EPSILON);
@@ -225,10 +270,10 @@ BOOST_AUTO_TEST_CASE(test_market_sell_order_full_execution)
 
     double vwap = lob.AbsorbMarketOrder(executed_orders, volume, 1);
 
-    // should execute 100 at price 99.0
+    // should execute buy orders 100 at price 99.0
     BOOST_CHECK_EQUAL(executed_orders.size(), 1);
     BOOST_CHECK_CLOSE(executed_orders[0].Price(), 99.0, EPSILON);
-    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 100.0, EPSILON);
+    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), -100.0, EPSILON);
 
     BOOST_CHECK_CLOSE(vwap, 99.0, EPSILON);
     BOOST_CHECK_CLOSE(volume, 0.0, EPSILON);
@@ -249,7 +294,7 @@ BOOST_AUTO_TEST_CASE(test_market_order_insufficient_liquidity)
     double vwap = lob.AbsorbMarketOrder(executed_orders, volume, -1);
 
     BOOST_CHECK_EQUAL(executed_orders.size(), 1);
-    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 50.0, EPSILON);
+    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 50.0, EPSILON); // should execute 50 shares sell orders
     BOOST_CHECK_CLOSE(volume, 50.0, EPSILON); // 50 shares not executed
 }
 
@@ -459,7 +504,7 @@ BOOST_AUTO_TEST_CASE(test_absorb_general_order_mo)
     executed_orders = lob.AbsorbGeneralOrder(o_type, 0.0, volume, -1);
 
     BOOST_CHECK_EQUAL(executed_orders.size(), 1);
-    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 50.0, EPSILON);
+    BOOST_CHECK_CLOSE(executed_orders[0].Volume(), 50.0, EPSILON); // 50 shares sell exe.
 }
 
 // TODO: invalid inpur, s=0

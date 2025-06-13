@@ -21,6 +21,7 @@ public:
     inline double ask() const { return asks.size() ? asks.front().Price() : 0.0; }
     inline double mid() const { return (ask() + bid()) * 0.5; }
     inline bool oneSideEmpty() const { return !asks.size() || !bids.size(); }
+    inline bool bothSidesEmpty() const { return !asks.size() && !asks.size(); }
 
     const Bar &getBarAt(int s, int pos) const;
     double getVolumeAt(int s, int pos) const;
@@ -31,6 +32,7 @@ public:
     void PrintLOB() const;
 
     void AddLimitOrder(int s, double p, double v);
+    void CancelLimitOrder(int s, double p, double v);
     double AbsorbMarketOrder(std::vector<Bar> &eos, // [O] - executed orders
                              double &v,             // [I] and [O] - input volume and outstanding volume
                              int s);                // [I] - sign of the market order

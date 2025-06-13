@@ -109,13 +109,27 @@ void LOB::AddLimitOrder(int s, double p, double v)
         std::vector<Bar>::iterator it = bars_other_side.begin() + PriceLocation(-s, p);
         auto &bar = *(it);
         bar.ExecuteAgainst(v);
-        if (abs(bar.Volume() - 0.0) < __DBL_EPSILON__)
+        if (abs(bar.Volume()) < __DBL_EPSILON__)
         {
             bars_other_side.erase(it);
             if (v > __DBL_EPSILON__) // if there is outstanding volume, we need to add it to existing lob
                 AddLimitOrder(s, p, v);
         }
     }
+}
+
+// cancel a limit order of price and and volume v
+void LOB::CancelLimitOrder(int s, double p, double v)
+{
+    int state = ContainsPrice(p); // 0 (no orders at p), 1 (sell orders at p), -1 (buy orders at p)
+    if (s * state <= 0)           // if no orders at the specified side, do nothing
+        return;
+    std::vector<Bar> &bars = s > 0 ? asks : bids;
+    std::vector<Bar>::iterator it = bars.begin() + PriceLocation(s, p);
+    auto &bar = *(it);
+    bar.AddVolumesBy(-v);
+    if(bar.Volume() < __DBL_EPSILON__)
+        bars.erase(it);
 }
 
 // adjust the lob with an incoming market order of sign s (1: sell; -1: buy) and volume v
@@ -129,13 +143,14 @@ double LOB::AbsorbMarketOrder(std::vector<Bar> &eos,
     eos.resize(0);
     double v_ttl = 0.0;
     double pos_ttl = 0.0;
-    std::vector<Bar> &bars_other_side = -s > 0 ? asks : bids; // sell orders, otherside = bid; buy orders, otherside - asks
+    int s_other_side = -s;
+    std::vector<Bar> &bars_other_side = s_other_side > 0 ? asks : bids; // sell orders, otherside = bid; buy orders, otherside - asks
     // if otherside is ask, loop from begin to end; if bid, loop from end to begin
     while (v > __DBL_EPSILON__ && bars_other_side.size())
     {
         double orig_v = v;
         // if otherside is ask, execute from the beginning; otherwise from the end
-        std::vector<Bar>::iterator it = -s > 0 ? bars_other_side.begin() : bars_other_side.end() - 1;
+        std::vector<Bar>::iterator it = s_other_side > 0 ? bars_other_side.begin() : bars_other_side.end() - 1;
         auto &bar = *(it);
         bar.ExecuteAgainst(v);
 
@@ -143,7 +158,7 @@ double LOB::AbsorbMarketOrder(std::vector<Bar> &eos,
         double exe_v = orig_v - v;
         v_ttl += exe_v;
         pos_ttl += exe_v * bar.Price();
-        eos.push_back(Bar(bar.Price(), exe_v));
+        eos.push_back(Bar(bar.Price(), s_other_side * exe_v));
 
         if (bar.Volume() < __DBL_EPSILON__)
             bars_other_side.erase(it);
@@ -197,6 +212,7 @@ void LOB::DecayOrders(double d_coef)
 }
 
 // update LOB and add order based on order type
+// return exercised limit order, sell/buy direction is marked by the sign of bar.volume
 std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, int s)
 {
     std::vector<Bar> executed_orders;
@@ -213,7 +229,7 @@ std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, i
         int s_other_side = -s;
         AddLimitOrder(s, p, v);
 
-        /*
+        /* TODO: refactor this part so that executed orders are returned in AddLimitOrder
         compare orders on the other side and see whether anything has changed:
         1.  If current bars contains the bar at the same side,
             either volume is not touched, or the volume is touched (exercised);
@@ -234,7 +250,7 @@ std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, i
                 double curr_v = getVolumeAt(s_other_side, PriceLocation(s_other_side, orig_p));
                 double diff_v = orig_v - curr_v;
                 if (diff_v > __DBL_EPSILON__)
-                    executed_orders.push_back(Bar(orig_p, diff_v));
+                    executed_orders.push_back(Bar(orig_p, s_other_side * diff_v));
             }
         }
         break;
