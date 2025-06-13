@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_no_outstanding_order)
 
     // No outstanding order should return false
     bool executed = hedger.IsMyOrderExecuted(empty_eos);
-    BOOST_CHECK_EQUAL(executed, false);
+    BOOST_CHECK_EQUAL(executed, FALSE);
 }
 
 BOOST_AUTO_TEST_CASE(test_is_my_order_executed_with_matching_execution)
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_partial_execution)
 
     // Should not be fully executed
     bool executed = hedger.IsMyOrderExecuted(partial_eos);
-    BOOST_CHECK_EQUAL(executed, false);
+    BOOST_CHECK_EQUAL(executed, FALSE);
 }
 
 BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_price)
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_price)
 
     // Should not match
     bool executed = hedger.IsMyOrderExecuted(wrong_price_eos);
-    BOOST_CHECK_EQUAL(executed, false);
+    BOOST_CHECK_EQUAL(executed, FALSE);
 }
 
 BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_sign)
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_sign)
 
     // Should not match
     bool executed = hedger.IsMyOrderExecuted(wrong_sign_eos);
-    BOOST_CHECK_EQUAL(executed, false);
+    BOOST_CHECK_EQUAL(executed, FALSE);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -646,7 +646,7 @@ BOOST_AUTO_TEST_CASE(test_empty_execution_list)
 
     // Should handle empty execution lists
     BOOST_CHECK_NO_THROW(hedger.IsMyOrderExecuted(empty_nested_eos));
-    BOOST_CHECK_EQUAL(hedger.IsMyOrderExecuted(empty_nested_eos), false);
+    BOOST_CHECK_EQUAL(hedger.IsMyOrderExecuted(empty_nested_eos), FALSE);
 }
 
 BOOST_AUTO_TEST_CASE(test_wide_spread_lob)
