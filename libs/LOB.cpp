@@ -109,13 +109,27 @@ void LOB::AddLimitOrder(int s, double p, double v)
         std::vector<Bar>::iterator it = bars_other_side.begin() + PriceLocation(-s, p);
         auto &bar = *(it);
         bar.ExecuteAgainst(v);
-        if (abs(bar.Volume() - 0.0) < __DBL_EPSILON__)
+        if (abs(bar.Volume()) < __DBL_EPSILON__)
         {
             bars_other_side.erase(it);
             if (v > __DBL_EPSILON__) // if there is outstanding volume, we need to add it to existing lob
                 AddLimitOrder(s, p, v);
         }
     }
+}
+
+// cancel a limit order of price and and volume v
+void LOB::CancelLimitOrder(int s, double p, double v)
+{
+    int state = ContainsPrice(p); // 0 (no orders at p), 1 (sell orders at p), -1 (buy orders at p)
+    if (s * state <= 0)           // if no orders at the specified side, do nothing
+        return;
+    std::vector<Bar> &bars = s > 0 ? asks : bids;
+    std::vector<Bar>::iterator it = bars.begin() + PriceLocation(s, p);
+    auto &bar = *(it);
+    bar.AddVolumesBy(-v);
+    if(bar.Volume() < __DBL_EPSILON__)
+        bars.erase(it);
 }
 
 // adjust the lob with an incoming market order of sign s (1: sell; -1: buy) and volume v

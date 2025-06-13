@@ -180,6 +180,51 @@ BOOST_AUTO_TEST_CASE(test_add_orders_other_side)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(LOBCancelLimitOrderTests)
+
+BOOST_AUTO_TEST_CASE(test_cancel_ask_order_partial)
+{
+
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+
+    lob.CancelLimitOrder(1, 101.0, 50.0);
+    BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON); // lowest ask should be 101
+    BOOST_CHECK_CLOSE(lob.getVolumeAt(1, lob.PriceLocation(1,101.0)), 100.0, EPSILON);
+}
+
+BOOST_AUTO_TEST_CASE(test_cancel_ask_order_full)
+{
+
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+
+    lob.CancelLimitOrder(1, 101.0, 150.0);
+    BOOST_CHECK_CLOSE(lob.ask(), 102.0, EPSILON); // bar at 101 is removed
+}
+
+BOOST_AUTO_TEST_CASE(test_cancel_limit_order_skip)
+{
+    LOB lob;
+
+    lob.AddLimitOrder(1, 102.0, 100.0); // ask
+    lob.AddLimitOrder(1, 101.0, 150.0); // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0); // ask, higher price
+    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON); // no bid orders
+
+    lob.CancelLimitOrder(-1, 101.0, 150.0);
+    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON); // still no bid orders
+    BOOST_CHECK(true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 // test LOB::AbsorbMarketOrder
 BOOST_AUTO_TEST_SUITE(LOBAbsorbMarketOrderTests)
 

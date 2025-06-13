@@ -32,6 +32,7 @@ public:
     void PrintLOB() const;
 
     void AddLimitOrder(int s, double p, double v);
+    void CancelLimitOrder(int s, double p, double v);
     double AbsorbMarketOrder(std::vector<Bar> &eos, // [O] - executed orders
                              double &v,             // [I] and [O] - input volume and outstanding volume
                              int s);                // [I] - sign of the market order
