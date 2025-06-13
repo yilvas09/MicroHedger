@@ -91,11 +91,11 @@ void DeltaHedger::PostOrder(double &p,
         v = abs(delta);         // this can be replaced by v = delta when refactoring
         p = s > 0 ? currLOB.ask() : currLOB.bid();
         // from passive to aggresive
-        if (t_q <= 0.25)
+        if (t_q < 0.25)
             p += s * ba_spr; // p = pb - spr (buy) or pa + spr (sell)
-        else if (t_q <= 0.5)
+        else if (t_q < 0.5)
             ; // do nothing, p = pb (buy) or pa (sell)
-        else if (t_q <= 0.75)
+        else if (t_q < 0.75)
             p -= s * 0.5 * ba_spr; // p = pb + 0.5spr (buy) or pa - 0.5spr (sell)
         else
             p -= s * ba_spr; // p = pa (buy) or pb (sell)
