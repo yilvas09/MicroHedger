@@ -39,7 +39,7 @@ public:
                    const LOB &currLOB,                                  // [I] - current lob
                    double t_q                                           // [I] - frac of current quarter / hour
     );
-    void UpdateInventories(const std::vector<Bar> &eos);
+    void UpdateInventories(const std::vector<std::vector<Bar>> &eos);
 };
 
 #endif

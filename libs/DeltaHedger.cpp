@@ -105,9 +105,9 @@ void DeltaHedger::PostOrder(double &p,
     }
 }
 
-void DeltaHedger::UpdateInventories(const std::vector<Bar> &eos)
+void DeltaHedger::UpdateInventories(const std::vector<std::vector<Bar>> &eos)
 {
-    bool isOrderExecuted = IsMyOrderExecuted(std::vector<std::vector<Bar>>(1, eos));
+    bool isOrderExecuted = IsMyOrderExecuted(eos);
     if(!outstanding_order.IsEmptyBar() && isOrderExecuted)
     {
         Bar bar(outstanding_order.Price(), -outstanding_order.Volume());
