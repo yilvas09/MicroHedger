@@ -23,6 +23,9 @@ public:
     DeltaHedger(double pos, double iv) : opt_pos(pos), implied_vol(iv) {}
     ~DeltaHedger() {}
 
+    inline double getOrderVolume() const { return outstanding_order.Volume(); }
+    inline double getOrderPrice() const { return outstanding_order.Price(); }
+
     double Delta(double vol, const LOB &currLOB, double time) const;
     double Gamma(double vol, const LOB &currLOB, double time) const;
     bool IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos);

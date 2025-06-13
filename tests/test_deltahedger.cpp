@@ -141,6 +141,9 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_with_matching_execution)
     std::vector<std::vector<Bar>> empty_eos;
     hedger.PostOrder(p, v, s, empty_eos, test_lob, 0.1);
 
+    BOOST_CHECK_CLOSE(hedger.getOrderVolume(), s * v, EPSILON);
+    BOOST_CHECK_CLOSE(hedger.getOrderPrice(), p, EPSILON);
+
     // Now create execution that matches the posted order
     std::vector<std::vector<Bar>> matching_eos;
     std::vector<Bar> execution_round;
@@ -304,7 +307,7 @@ BOOST_AUTO_TEST_CASE(test_act_positive_delta_aggressive_timing)
         BOOST_CHECK_CLOSE(p, expected_p, EPSILON);
     }
     else if (s < 0)
-    {                                                
+    {
         // Buying (negative delta)
         double expected_p = test_lob.bid() - ba_spr; // 99 - 1 = 98
         BOOST_CHECK_CLOSE(p, expected_p, EPSILON);
