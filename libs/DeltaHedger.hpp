@@ -28,7 +28,7 @@ public:
 
     double Delta(double vol, const LOB &currLOB, double time) const;
     double Gamma(double vol, const LOB &currLOB, double time) const;
-    bool IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos);
+    bool IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos) const;
 
     void ResetGammaContract(double time, const LOB &currLOB);
     void ReCalcGreeks(double time, const LOB &currLOB);

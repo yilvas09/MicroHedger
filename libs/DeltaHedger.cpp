@@ -40,13 +40,14 @@ void DeltaHedger::ReCalcGreeks(double time, const LOB &currLOB)
 
 // hedger needs to know whether his own order posted, a bar with signed volume, is executed
 // by going through all orders executed (eos) within this sub-trading interval
-bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos)
+bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos) const
 {
     // if there's no outstanding order, i.e. empty bar
     // the function does not go into this if-branch
     // and false is returned
     if (!outstanding_order.IsEmptyBar())
     {
+        double oov = outstanding_order.Volume();
         for (auto &os : eos)
         {
             for (auto &o : os)
@@ -56,10 +57,10 @@ bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos)
                 bool same_s = o.Volume() * outstanding_order.Volume() > 0;
                 if (same_p && same_s)
                 {
-                    double ov = o.Volume(), oov = outstanding_order.Volume();
+                    double ov = o.Volume();
                     double exe_v = ov > 0 ? std::min(ov, oov) : std::max(ov, oov);
-                    outstanding_order.AddVolumesBy(-exe_v);
-                    if (abs(outstanding_order.Volume()) < __DBL_EPSILON__)
+                    oov -= exe_v;
+                    if (abs(oov) < __DBL_EPSILON__)
                         return true;
                 }
             }
