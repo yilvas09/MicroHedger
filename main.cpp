@@ -9,7 +9,7 @@ int main()
 {
     const int T = 3;
     const int H = 2;
-    const int Q = 5;
+    const int Q = 4;
     const int total_time = T * H * Q;
     const int seed = 1;
 
@@ -74,9 +74,17 @@ int main()
                 // and submit new order based on current LOB
                 double p_hedger = 0.0, v_hedger = 0.0;
                 int s_hedger = 0;
-                hedger.Act(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, (double)q / Q);
+                hedger.PostOrder(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, (double)q / Q);
+
                 // LOB absorb hedger's order
-                currLOB.AddLimitOrder(s_hedger, p_hedger, v_hedger);
+                std::vector<Bar> exe_order_hedger = currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, s_hedger);
+
+                // hedger updates inventories
+                hedger.UpdateInventories(exe_order_hedger);
+                // and cancels his order if not executed
+                // if(!exe_order_hedger.size())
+                    // currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, -s_hedger);
+
                 // snapshot granularity is quarter-wise; not tick-wise yet
                 snapshots.push_back(currLOB);
                 std::cout << "tau = " << tau << "; t = " << t << ", h = " << h << ", q = " << q << std::endl;

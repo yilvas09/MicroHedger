@@ -29,13 +29,14 @@ public:
 
     void ResetGammaContract(double time, const LOB &currLOB);
     void ReCalcGreeks(double time, const LOB &currLOB);
-    void Act(double &p,                                           // [O] - price of hedger's order
-             double &v,                                           // [O] - volume of hedger's order
-             int &s,                                              // [O] - sign of hedger's order
-             const std::vector<std::vector<Bar>> &available_info, // [I] - executed orders
-             const LOB& currLOB,                                  // [I] - current lob
-             double t_q                                           // [I] - frac of current quarter / hour
+    void PostOrder(double &p,                                           // [O] - price of hedger's order
+                   double &v,                                           // [O] - volume of hedger's order
+                   int &s,                                              // [O] - sign of hedger's order
+                   const std::vector<std::vector<Bar>> &available_info, // [I] - executed orders
+                   const LOB &currLOB,                                  // [I] - current lob
+                   double t_q                                           // [I] - frac of current quarter / hour
     );
+    void UpdateInventories(const std::vector<Bar> &eos);
 };
 
 #endif

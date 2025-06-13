@@ -71,7 +71,7 @@ bool DeltaHedger::IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos)
 // based on execution results of this quarter hedger knows his state
 // he then removes posted but unexecuted order (if any)
 // and submit new order based on current LOB
-void DeltaHedger::Act(double &p,
+void DeltaHedger::PostOrder(double &p,
                       double &v,
                       int &s,
                       const std::vector<std::vector<Bar>> &eos,
@@ -81,15 +81,7 @@ void DeltaHedger::Act(double &p,
     if (abs(delta) < __DBL_EPSILON__)
         return;
     bool isOrderExecuted = IsMyOrderExecuted(eos);
-    if (!outstanding_order.IsEmptyBar() && isOrderExecuted)
-    {
-        // we don't post order if
-        // 1. we have posted order before (oustanding order not empty)
-        // 2. AND it's executed
-        Bar bar(outstanding_order.Price(), -outstanding_order.Volume());
-        stocks.push_back(bar); // update inventories
-    }
-    else
+    if (outstanding_order.IsEmptyBar() || !isOrderExecuted)
     {
         // we post order if
         // 1. we haven't posted before (oustanding order not empty) and delta not zero
@@ -110,5 +102,15 @@ void DeltaHedger::Act(double &p,
 
         // record posted order
         outstanding_order = Bar(p, s * v);
+    }
+}
+
+void DeltaHedger::UpdateInventories(const std::vector<Bar> &eos)
+{
+    bool isOrderExecuted = IsMyOrderExecuted(std::vector<std::vector<Bar>>(1, eos));
+    if(!outstanding_order.IsEmptyBar() && isOrderExecuted)
+    {
+        Bar bar(outstanding_order.Price(), -outstanding_order.Volume());
+        stocks.push_back(bar); // update inventories
     }
 }

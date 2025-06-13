@@ -135,11 +135,11 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_with_matching_execution)
     test_lob.AddLimitOrder(1, 100.0, 50.0);
     hedger.ReCalcGreeks(time, test_lob);
 
-    // Simulate posting an order through Act
+    // Simulate posting an order through PostOrder
     double p, v;
     int s;
     std::vector<std::vector<Bar>> empty_eos;
-    hedger.Act(p, v, s, empty_eos, test_lob, 0.1);
+    hedger.PostOrder(p, v, s, empty_eos, test_lob, 0.1);
 
     // Now create execution that matches the posted order
     std::vector<std::vector<Bar>> matching_eos;
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_partial_execution)
     double p, v;
     int s;
     std::vector<std::vector<Bar>> empty_eos;
-    hedger.Act(p, v, s, empty_eos, test_lob, 0.1);
+    hedger.PostOrder(p, v, s, empty_eos, test_lob, 0.1);
 
     // Partial execution (smaller volume)
     std::vector<std::vector<Bar>> partial_eos;
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_price)
     double p, v;
     int s;
     std::vector<std::vector<Bar>> empty_eos;
-    hedger.Act(p, v, s, empty_eos, test_lob, 0.1);
+    hedger.PostOrder(p, v, s, empty_eos, test_lob, 0.1);
 
     // Execution at different price
     std::vector<std::vector<Bar>> wrong_price_eos;
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_sign)
     double p, v;
     int s;
     std::vector<std::vector<Bar>> empty_eos;
-    hedger.Act(p, v, s, empty_eos, test_lob, 0.1);
+    hedger.PostOrder(p, v, s, empty_eos, test_lob, 0.1);
 
     // Execution with opposite sign
     std::vector<std::vector<Bar>> wrong_sign_eos;
@@ -244,8 +244,8 @@ BOOST_AUTO_TEST_CASE(test_is_my_order_executed_wrong_sign)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-// Test Act method functionality
-BOOST_AUTO_TEST_SUITE(DeltaHedgerActTests)
+// Test PostOrder method functionality
+BOOST_AUTO_TEST_SUITE(DeltaHedgerPostOrderTests)
 
 BOOST_AUTO_TEST_CASE(test_act_zero_delta)
 {
@@ -264,8 +264,8 @@ BOOST_AUTO_TEST_CASE(test_act_zero_delta)
     int s = 0;
     std::vector<std::vector<Bar>> empty_eos;
 
-    // Act should do nothing when delta is zero
-    hedger.Act(p, v, s, empty_eos, test_lob, 0.1);
+    // PostOrder should do nothing when delta is zero
+    hedger.PostOrder(p, v, s, empty_eos, test_lob, 0.1);
 
     // Values should remain unchanged
     BOOST_CHECK_CLOSE(p, 0.0, EPSILON);
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE(test_act_positive_delta_aggressive_timing)
 
     // Very early (passive)
     double t_q = 0.1; // <= 0.25
-    hedger.Act(p, v, s, empty_eos, test_lob, t_q);
+    hedger.PostOrder(p, v, s, empty_eos, test_lob, t_q);
 
     // Should place aggressive order
     double ba_spr = test_lob.ask() - test_lob.bid(); // 1.0
@@ -333,10 +333,10 @@ BOOST_AUTO_TEST_CASE(test_act_timing_strategies)
     double ba_spr = test_lob.ask() - test_lob.bid();
 
     // Test different timing strategies
-    hedger.Act(p1, v1, s1, empty_eos, test_lob, 0.1); // <= 0.25: most aggressive
-    hedger.Act(p2, v2, s2, empty_eos, test_lob, 0.4); // <= 0.5: at bid/ask
-    hedger.Act(p3, v3, s3, empty_eos, test_lob, 0.6); // <= 0.75: half spread improvement
-    hedger.Act(p4, v4, s4, empty_eos, test_lob, 0.9); // > 0.75: passive (cross spread)
+    hedger.PostOrder(p1, v1, s1, empty_eos, test_lob, 0.1); // <= 0.25: most aggressive
+    hedger.PostOrder(p2, v2, s2, empty_eos, test_lob, 0.4); // <= 0.5: at bid/ask
+    hedger.PostOrder(p3, v3, s3, empty_eos, test_lob, 0.6); // <= 0.75: half spread improvement
+    hedger.PostOrder(p4, v4, s4, empty_eos, test_lob, 0.9); // > 0.75: passive (cross spread)
 
     // All should have same sign (same delta) and volume
     BOOST_CHECK_EQUAL(s1, s2);
@@ -380,14 +380,14 @@ BOOST_AUTO_TEST_CASE(test_act_order_execution_cycle)
     int s1, s2;
     std::vector<std::vector<Bar>> empty_eos;
 
-    // First Act - should post order
-    hedger.Act(p1, v1, s1, empty_eos, test_lob, 0.5);
+    // First PostOrder - should post order
+    hedger.PostOrder(p1, v1, s1, empty_eos, test_lob, 0.5);
 
-    // Second Act without execution - should do nothing (order already posted)
+    // Second PostOrder without execution - should do nothing (order already posted)
     double original_p1 = p1, original_v1 = v1;
     int original_s1 = s1;
 
-    hedger.Act(p2, v2, s2, empty_eos, test_lob, 0.5);
+    hedger.PostOrder(p2, v2, s2, empty_eos, test_lob, 0.5);
 
     // Values should remain the same (no new order posted)
     BOOST_CHECK_CLOSE(p2, original_p1, EPSILON);
@@ -412,8 +412,8 @@ BOOST_AUTO_TEST_CASE(test_act_after_execution)
     int s1, s2;
     std::vector<std::vector<Bar>> empty_eos;
 
-    // First Act - post order
-    hedger.Act(p1, v1, s1, empty_eos, test_lob, 0.5);
+    // First PostOrder - post order
+    hedger.PostOrder(p1, v1, s1, empty_eos, test_lob, 0.5);
 
     // Simulate execution
     std::vector<std::vector<Bar>> execution_eos;
@@ -421,8 +421,8 @@ BOOST_AUTO_TEST_CASE(test_act_after_execution)
     execution_round.push_back(Bar(p1, s1 * v1)); // Full execution
     execution_eos.push_back(execution_round);
 
-    // Act after execution - should update inventory and potentially post new order
-    hedger.Act(p2, v2, s2, execution_eos, test_lob, 0.5);
+    // PostOrder after execution - should update inventory and potentially post new order
+    hedger.PostOrder(p2, v2, s2, execution_eos, test_lob, 0.5);
 
     // The delta should have changed due to inventory update
     // So new order parameters might be different
@@ -503,10 +503,10 @@ BOOST_AUTO_TEST_CASE(test_full_hedging_cycle)
     int s;
     std::vector<std::vector<Bar>> empty_eos;
 
-    // Act several times with different market conditions
+    // PostOrder several times with different market conditions
     for (double t_q = 0.1; t_q <= 1.0; t_q += 0.2)
     {
-        hedger.Act(p, v, s, empty_eos, test_lob, t_q);
+        hedger.PostOrder(p, v, s, empty_eos, test_lob, t_q);
 
         // Simulate partial execution occasionally
         if (t_q > 0.5)
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE(test_full_hedging_cycle)
             execution_round.push_back(Bar(p, s * v * 0.3)); // 30% execution
             partial_execution.push_back(execution_round);
 
-            hedger.Act(p, v, s, partial_execution, test_lob, t_q + 0.1);
+            hedger.PostOrder(p, v, s, partial_execution, test_lob, t_q + 0.1);
         }
     }
 
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE(test_stress_trading_session)
 
         // Random timing within quarter
         double t_q = (i % 10) * 0.1;
-        hedger.Act(p, v, s, eos, test_lob, t_q);
+        hedger.PostOrder(p, v, s, eos, test_lob, t_q);
 
         // Occasionally simulate executions
         if (i % 10 == 0 && i > 0)
@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE(test_stress_trading_session)
             execution_round.push_back(Bar(p, s * v));
             eos.push_back(execution_round);
 
-            hedger.Act(p, v, s, eos, test_lob, t_q + 0.05);
+            hedger.PostOrder(p, v, s, eos, test_lob, t_q + 0.05);
         }
     }
 
@@ -664,7 +664,7 @@ BOOST_AUTO_TEST_CASE(test_wide_spread_lob)
     std::vector<std::vector<Bar>> empty_eos;
 
     // Should handle wide spreads appropriately
-    BOOST_CHECK_NO_THROW(hedger.Act(p, v, s, empty_eos, wide_spread_lob, 0.5));
+    BOOST_CHECK_NO_THROW(hedger.PostOrder(p, v, s, empty_eos, wide_spread_lob, 0.5));
 
     // Check that pricing strategy adapts to wide spread
     double ba_spr = wide_spread_lob.ask() - wide_spread_lob.bid(); // 20.0
