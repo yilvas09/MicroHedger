@@ -13,6 +13,7 @@ public:
     static void sortPairedVectors(std::vector<double> &A, std::vector<double> &B);
     static double normalCDF(double x);
     static double normalPDF(double x);
+    inline static int sgn(double x) { return (x > 0) - (x < 0); }
 };
 
 enum OrderType
