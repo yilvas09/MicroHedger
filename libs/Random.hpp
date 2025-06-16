@@ -4,6 +4,39 @@
 #include <random>
 #include "Utils.hpp"
 
+struct RandomInfo
+{
+    int seed;
+    double vol_news;
+    double order_intensity;
+    double prob_otype;
+    double prob_info;
+    double v_min, v_max;
+    double mean_spread, vol_spread;
+    double prob_sign;
+
+    RandomInfo(int _seed,
+               double _vol_news,
+               double _order_intensity,
+               double _prob_otype,
+               double _prob_info,
+               double _v_min, double _v_max,
+               double _mean_spread, double _vol_spread,
+               double _prob_sign)
+        : seed(_seed),
+          vol_news(_vol_news),
+          order_intensity(_order_intensity),
+          prob_otype(_prob_otype),
+          prob_info(_prob_info),
+          v_min(_v_min),
+          v_max(_v_max),
+          mean_spread(_mean_spread),
+          vol_spread(_vol_spread),
+          prob_sign(_prob_sign)
+    {
+    }
+};
+
 class Random
 {
 private:
@@ -33,7 +66,9 @@ public:
            double _prob_otype,
            double _prob_info,
            double _v_min, double _v_max,
-           double _mean_spread, double _vol_spread);
+           double _mean_spread, double _vol_spread,
+           double _prob_sign = 0.5);
+    Random(const RandomInfo &ri);
     ~Random() {}
 
     double GenerateShockedPrice(double p_prev);

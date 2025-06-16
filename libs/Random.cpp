@@ -6,25 +6,23 @@ Random::Random(int _seed,
                double _prob_otype,
                double _prob_info,
                double _v_min, double _v_max,
-               double _mean_spread, double _vol_spread)
-    : seed(_seed),
-      vol_news(_vol_news),
-      order_intensity(_order_intensity),
-      prob_otype(_prob_otype),
-      prob_info(_prob_info),
-      v_min(_v_min),
-      v_max(_v_max),
-      mean_spread(_mean_spread),
-      vol_spread(_vol_spread),
-      prob_sign(0.5),
-      generator(std::default_random_engine(seed)),
-      norm_dist_p_shock(std::normal_distribution<double>(0.0, vol_news)),
-      pois_dist_onum(std::poisson_distribution<int>(order_intensity)),
-      ber_dist_otype(std::bernoulli_distribution(prob_otype)),
-      ber_dist_info(std::bernoulli_distribution(prob_info)),
-      uni_dist_v_mm(std::uniform_real_distribution<double>(v_min, v_max)),
-      norm_dist_p_mm(std::normal_distribution<double>(mean_spread, vol_spread)),
-      ber_dist_sign(std::bernoulli_distribution(prob_sign))
+               double _mean_spread, double _vol_spread,
+               double _prob_sign)
+    : generator(std::default_random_engine(_seed)),
+      norm_dist_p_shock(std::normal_distribution<double>(0.0, _vol_news)),
+      pois_dist_onum(std::poisson_distribution<int>(_order_intensity)),
+      ber_dist_otype(std::bernoulli_distribution(_prob_otype)),
+      ber_dist_info(std::bernoulli_distribution(_prob_info)),
+      uni_dist_v_mm(std::uniform_real_distribution<double>(_v_min, _v_max)),
+      norm_dist_p_mm(std::normal_distribution<double>(_mean_spread, _vol_spread)),
+      ber_dist_sign(std::bernoulli_distribution(_prob_sign))
+{
+}
+
+Random::Random(const RandomInfo &ri)
+    : Random(ri.seed, ri.vol_news, ri.order_intensity, ri.prob_otype,
+             ri.prob_info, ri.v_min, ri.v_max, ri.mean_spread, ri.vol_spread,
+             ri.prob_sign)
 {
 }
 

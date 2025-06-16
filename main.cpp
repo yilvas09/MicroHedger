@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <random>
 #include "libs/LOB.hpp"
 #include "libs/Random.hpp"
 #include "libs/DeltaHedger.hpp"
@@ -31,8 +30,9 @@ int main()
     const double option_pos = 10;
     const double implied_vol = vol_news;
 
-    Random rd(seed, vol_news, order_arrival_intensity,
-              p_otype, p_info, vol_min, vol_max, m_spr, v_spr);
+    RandomInfo ri(seed, vol_news, order_arrival_intensity,
+              p_otype, p_info, vol_min, vol_max, m_spr, v_spr, 0.5);
+    Random rd(ri);
     DeltaHedger hedger(option_pos, implied_vol);
     std::vector<LOB> snapshots(1, lob0);
     std::vector<double> fundamental_prices(1, p0);
