@@ -46,6 +46,7 @@ void Random::GenerateOrder(OrderType &o_type, // [O] - LIMITORDER or MARKETORDER
     o_type = ber_dist_otype(generator) ? LIMITORDER : MARKETORDER;
     v = uni_dist_v_mm(generator);
     bool informed = ber_dist_info(generator);
+    double p_sign = ber_dist_sign.param().p();
     switch (o_type)
     {
     case MARKETORDER:
@@ -53,12 +54,12 @@ void Random::GenerateOrder(OrderType &o_type, // [O] - LIMITORDER or MARKETORDER
         if (informed)
             s = p_mid > p_fund ? 1 : -1; // sell when current price > fundamentals; buy otherwise
         else
-            s = ber_dist_sign(generator) > prob_sign ? 1 : -1;
+            s = ber_dist_sign(generator) > p_sign ? 1 : -1;
         break;
     }
     case LIMITORDER:
     {
-        s = ber_dist_sign(generator) > prob_sign ? 1 : -1;
+        s = ber_dist_sign(generator) > p_sign ? 1 : -1;
         // informed market makers use fundamental price as reference,
         // while uninformed ones use mid prices
         p = (informed ? p_fund : p_mid) + s * norm_dist_p_mm(generator);

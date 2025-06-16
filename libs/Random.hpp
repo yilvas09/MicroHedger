@@ -40,16 +40,6 @@ struct RandomInfo
 class Random
 {
 private:
-    int seed;
-
-    double vol_news;
-    double order_intensity;
-    double prob_otype;
-    double prob_info;
-    double v_min, v_max;
-    double mean_spread, vol_spread;
-    double prob_sign;
-
     std::default_random_engine generator;
     std::normal_distribution<double> norm_dist_p_shock;   // news shocks on fundamental price
     std::poisson_distribution<int> pois_dist_onum;        // number of orders at each subinterval
