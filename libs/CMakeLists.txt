@@ -22,3 +22,8 @@ set(SOURCES_PLAYERS
 )
 add_library(players_lib ${SOURCES_PLAYERS})
 target_link_libraries(players_lib option_lib lob_lib)
+
+set(SOURCES_PATHS
+    PathCollection.cpp
+)
+add_library(path_lib ${SOURCES_PATHS})

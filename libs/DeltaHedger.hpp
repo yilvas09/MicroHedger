@@ -23,6 +23,8 @@ public:
     DeltaHedger(double pos, double iv) : opt_pos(pos), implied_vol(iv) {}
     ~DeltaHedger() {}
 
+    inline double getOptionPosition() const { return opt_pos; }
+    inline double getImpliedVol() const { return implied_vol; }
     inline double getOrderVolume() const { return outstanding_order.Volume(); }
     inline double getOrderPrice() const { return outstanding_order.Price(); }
 
@@ -30,6 +32,7 @@ public:
     double Gamma(double vol, const LOB &currLOB, double time) const;
     bool IsMyOrderExecuted(const std::vector<std::vector<Bar>> &eos) const;
 
+    void ClearOrderAndInventories();
     void ResetGammaContract(double time, const LOB &currLOB);
     void ReCalcGreeks(double time, const LOB &currLOB);
     void PostOrder(double &p,                                           // [O] - price of hedger's order

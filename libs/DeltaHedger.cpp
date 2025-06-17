@@ -18,13 +18,18 @@ double DeltaHedger::Gamma(double vol, const LOB &currLOB, double time) const
     return g_opt;
 }
 
-void DeltaHedger::ResetGammaContract(double time, const LOB &currLOB)
+void DeltaHedger::ClearOrderAndInventories()
 {
     // clear inventories from previous trading session
     stocks.resize(0);
     options.resize(0);
     // clear outstanding orders
     outstanding_order = Bar();
+}
+
+void DeltaHedger::ResetGammaContract(double time, const LOB &currLOB)
+{
+    ClearOrderAndInventories();
     // buy/sell ATM straddles maturing 2 days later
     double spot = currLOB.mid();
     options.push_back(Option(STRADDLE, time, time + 2., spot, opt_pos));
