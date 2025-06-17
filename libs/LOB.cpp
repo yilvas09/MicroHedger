@@ -5,6 +5,7 @@ LOB::LOB()
 {
     bids.resize(0);
     asks.resize(0);
+    decay_coef = 0.0;
 }
 
 LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
@@ -22,6 +23,15 @@ LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
         for (int j = 0; j < ps_tmp.size(); j++)
             bars.push_back(Bar(ps_tmp[j], vs_tmp[j]));
     }
+    decay_coef = 0.0;
+}
+
+LOB::LOB(double _d_coef,
+         const std::vector<double> &aps, const std::vector<double> &avs,
+         const std::vector<double> &bps, const std::vector<double> &bvs)
+    : LOB(aps, avs, bps, bvs)
+{
+    decay_coef = _d_coef;
 }
 
 // getter functions to obtain a specific bar in the lob
@@ -128,7 +138,7 @@ void LOB::CancelLimitOrder(int s, double p, double v)
     std::vector<Bar>::iterator it = bars.begin() + PriceLocation(s, p);
     auto &bar = *(it);
     bar.AddVolumesBy(-v);
-    if(bar.Volume() < __DBL_EPSILON__)
+    if (bar.Volume() < __DBL_EPSILON__)
         bars.erase(it);
 }
 
@@ -209,6 +219,11 @@ void LOB::DecayOrders(double d_coef)
             bar.AddVolumesBy((d_factor - 1) * bar.Volume());
         }
     }
+}
+
+void LOB::DecayOrders()
+{
+    DecayOrders(decay_coef);
 }
 
 // update LOB and add order based on order type

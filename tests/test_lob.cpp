@@ -323,7 +323,9 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_basic)
     std::vector<double> bid_prices = {99.0, 98.0};
     std::vector<double> bid_volumes = {800.0, 600.0};
 
-    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    // decay coefficient 0.01
+    double d_coef = 0.01;
+    LOB lob(0.01, ask_prices, ask_volumes, bid_prices, bid_volumes);
 
     // Verify initial state
     BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON);
@@ -333,9 +335,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_basic)
     double ini_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask()));
     double ini_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid()));
 
-    // Apply decay with coefficient 0.01
-    double d_coef = 0.01;
-    lob.DecayOrders(d_coef);
+    // Apply decay
+    lob.DecayOrders();
 
     // Verify price levels remain the same
     BOOST_CHECK_CLOSE(lob.mid(), 100.0, EPSILON);

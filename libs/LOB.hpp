@@ -8,12 +8,16 @@
 class LOB
 {
 private:
+    double decay_coef;
     std::vector<Bar> bids; // all the buy orders with ascending prices
     std::vector<Bar> asks; // all the sell orders with ascending prices
 
 public:
     LOB();
     LOB(const std::vector<double> &aps, const std::vector<double> &avs,
+        const std::vector<double> &bps, const std::vector<double> &bvs);
+    LOB(double _d_coef,
+        const std::vector<double> &aps, const std::vector<double> &avs,
         const std::vector<double> &bps, const std::vector<double> &bvs);
     ~LOB() {}
 
@@ -37,6 +41,7 @@ public:
                              double &v,             // [I] and [O] - input volume and outstanding volume
                              int s);                // [I] - sign of the market order
     void DecayOrders(double d_coef);
+    void DecayOrders();
     std::vector<Bar> AbsorbGeneralOrder(OrderType o_type, // [I] - order type
                                         double p,         // [I] - price of order
                                         double v,         // [I] - volume of order
