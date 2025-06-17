@@ -11,8 +11,8 @@ private:
     double volume;
 
 public:
-    Bar() : price(0.0), volume(0.0) {}
     Bar(double p, double v) : price(p), volume(v) {}
+    Bar() : Bar(0.0, 0.0) {}
     ~Bar() {}
 
     inline double Price() const { return price; }
