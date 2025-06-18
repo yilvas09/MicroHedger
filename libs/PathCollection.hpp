@@ -52,6 +52,8 @@ public:
          const RandomInfo &_ran_info);
     ~Path();
 
+    inline int Status() const { return status; }
+
     void ClearPath();
     void GenOnePath();
 };
@@ -70,4 +72,5 @@ public:
 
     void GeneratePaths();
     void CalcLiquidityMetrics(std::vector<double> &res);
+    void FindPathsWithStatus(int status, std::vector<int> &indices);
 };

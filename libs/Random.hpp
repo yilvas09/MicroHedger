@@ -35,6 +35,13 @@ struct RandomInfo
           prob_sign(_prob_sign)
     {
     }
+
+    RandomInfo(int _seed,
+               const RandomInfo &ri)
+        : RandomInfo(ri)
+    {
+        seed = _seed;
+    }
 };
 
 class Random

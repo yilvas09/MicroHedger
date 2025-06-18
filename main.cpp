@@ -38,7 +38,8 @@ int main()
     PathCollection paths(10, pi, ri);
     paths.GeneratePaths();
 
-    int a = 1;
+    std::vector<int> normal_paths_id;
+    paths.FindPathsWithStatus(0, normal_paths_id);
 
     return 0;
 }

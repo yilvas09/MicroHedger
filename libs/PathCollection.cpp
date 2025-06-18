@@ -1,4 +1,5 @@
 #include <vector>
+#include <memory>
 #include "PathCollection.hpp"
 
 Path::Path(
@@ -101,7 +102,13 @@ PathCollection::PathCollection(int n,
       ran_info(ri)
 {
     Path p_temp(pi, ri);
-    snapshots.resize(n_paths, p_temp);
+    snapshots.resize(1, p_temp);
+    for (int i = 1; i < n_paths; i++)
+    {
+        RandomInfo ri_i(ri.seed + i, ri);
+        std::unique_ptr<Path> ptr_pth(new Path(pi, ri_i));
+        snapshots.push_back(*ptr_pth);
+    }
 }
 
 PathCollection::~PathCollection()
@@ -111,11 +118,20 @@ PathCollection::~PathCollection()
 // this function should updates std::vector<Path> snapshots
 void PathCollection::GeneratePaths()
 {
-    // now the paths generated are all the same! because same seed is used 
     for (int i = 0; i < n_paths; i++)
         snapshots[i].GenOnePath();
 }
 
 void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
 {
+}
+
+void PathCollection::FindPathsWithStatus(int status, std::vector<int> &indices)
+{
+    indices.resize(0);
+    for (int i = 0; i < snapshots.size(); i++)
+    {
+        if (snapshots[i].Status() == status)
+            indices.push_back(i);
+    }
 }
