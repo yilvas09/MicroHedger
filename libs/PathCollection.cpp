@@ -13,6 +13,7 @@ Path::Path(
 {
     status = 0;
     lobs.resize(1, _path_info.lob_0);
+    mid_prices.resize(1, _path_info.lob_0.mid());
     hedger_deltas.resize(1, 0.0);
     hedger_gammas.resize(1, 0.0);
     fund_prices.resize(1, _path_info.p_0);
@@ -42,7 +43,6 @@ void Path::GenOnePath()
         {
             // news arrives and fundamental price changes
             const double ph = fund_prices.back();
-            fund_prices.push_back(rd.GenerateShockedPrice(ph));
             for (int quar = 0; quar < n_quarters; quar++)
             {
                 // create a copy of current LOB
@@ -59,7 +59,9 @@ void Path::GenOnePath()
                     // update LOB to include the order and report what orders are exercised
                     std::vector<Bar> exe_order = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
                     exe_orders.push_back(exe_order);
+                    mid_prices.push_back(currLOB.mid());
                 }
+                fund_prices.push_back(rd.GenerateShockedPrice(ph));
                 lobs.push_back(currLOB);
                 if (currLOB.oneSideEmpty())
                 {
@@ -124,6 +126,76 @@ void PathCollection::GeneratePaths()
 
 void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
 {
+    res.resize(0);
+    // 0. failure rate
+    std::vector<int> valid_idx;
+    FindPathsWithStatus(0, valid_idx);
+    int n_valid_paths = valid_idx.size();
+    res.push_back(1. - (double)n_valid_paths / n_paths);
+
+    // 1. volatilities
+    double v_1 = 0.0, v_2 = 0.0;
+    for (int i_path : valid_idx)
+    {
+        const std::vector<double> &mid_p = snapshots[i_path].mid_prices;
+        std::vector<double> mid_p_shocks;
+        double mean_shocks = mid_p[0], min_p = mid_p[0], max_p = mid_p[0];
+        double v_1_path = 0.0;
+        for (int i_p = 1; i_p < mid_p.size() - 1; i_p++)
+        {
+            double shock = mid_p[i_p] - mid_p[i_p - 1];
+            mid_p_shocks.push_back(shock);
+            mean_shocks += shock;
+            min_p = std::min(min_p, mid_p[i_p]);
+            max_p = std::max(max_p, mid_p[i_p]);
+        }
+        mean_shocks /= (int)mid_p.size();
+        for (int i_p = 0; i_p < mid_p.size() - 1; i_p++)
+            v_1_path += std::pow(mean_shocks - mid_p[i_p], 2);
+
+        // 1.1 volatility 1
+        v_1 += (v_1_path / (double)mid_p.size());
+        // 1.2. volatility 2
+        v_2 += (max_p - min_p);
+        // TODO: 1.3-1.4 quantile shocks to be implemented
+    }
+    v_1 /= n_paths;
+    v_2 /= n_paths;
+    res.push_back(v_1);
+    res.push_back(v_2);
+
+    // 2. liquidity
+    double l_1 = 0.0, l_2 = 0.0;
+    for (int i_path : valid_idx)
+    {
+        const std::vector<LOB> &lobs = snapshots[i_path].lobs;
+        // 2.1 average bid-ask spread
+        // TODO 2.2 total volume
+        double l_1_path = 0.0;
+        for (int i_p = 0; i_p < lobs.size() - 1; i_p++)
+        {
+            const LOB &lob = lobs[i_p];
+            l_1_path += (lob.ask() - lob.bid());
+        }
+        l_1 += (l_1_path / (double)lobs.size());
+    }
+    l_1 /= n_paths;
+    res.push_back(l_1);
+
+    // 3. price discovery
+    double d_1 = 0.0;
+    for (int i_path : valid_idx)
+    {
+        const std::vector<LOB> &lobs = snapshots[i_path].lobs;
+        const std::vector<double> &f_ps = snapshots[i_path].fund_prices;
+        double d_1_path = 0.0;
+        for (int tau = 0; tau < lobs.size() - 1; tau++)
+        {
+            d_1_path += std::pow(lobs[tau].mid() - f_ps[tau], 2);
+        }
+        d_1 += d_1_path / (int)lobs.size();
+    }
+    res.push_back(d_1);
 }
 
 void PathCollection::FindPathsWithStatus(int status, std::vector<int> &indices)

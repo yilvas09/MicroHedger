@@ -43,11 +43,13 @@ private:
     DeltaHedger hedger;
 
     std::vector<LOB> lobs;             // quarter-wise
+    std::vector<double> mid_prices;    // tick-wise mid prices;
     std::vector<double> hedger_deltas; // hour-wise
     std::vector<double> hedger_gammas; // hour-wise
     std::vector<double> fund_prices;   // hour-wise
 
 public:
+    friend class PathCollection;
     Path(const PathInfo &_path_info,
          const RandomInfo &_ran_info);
     ~Path();

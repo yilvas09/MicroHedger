@@ -7,7 +7,7 @@
 
 int main()
 {
-    const int T = 8;
+    const int T = 5;
     const int H = 10;
     const int Q = 4;
     const int total_time = T * H * Q;
@@ -41,6 +41,8 @@ int main()
 
     std::vector<int> normal_paths_id;
     paths.FindPathsWithStatus(0, normal_paths_id);
+    std::vector<double> results;
+    paths.CalcLiquidityMetrics(results);
 
     return 0;
 }
