@@ -579,7 +579,7 @@ BOOST_AUTO_TEST_CASE(test_absorb_general_order_other_side_lo_part_exe)
     std::vector<Bar> eos = lob.AbsorbGeneralOrder(o_type, p_new, v_new, s_new);
 
     BOOST_CHECK_EQUAL(eos.size(), 1);
-    BOOST_CHECK_CLOSE(eos[0].Volume(), 150.0, EPSILON);
+    BOOST_CHECK_CLOSE(eos[0].Volume(), -150.0, EPSILON);
     // the new buy LO is absorbed by existing sell LO and partly executed
     // outstanding volumes are posted on the other side
     BOOST_CHECK_EQUAL(lob.ContainsPrice(p_new), 1);

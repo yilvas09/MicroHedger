@@ -259,7 +259,7 @@ std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, i
             int contains_p = ContainsPrice(orig_p);
             if ((contains_p * s_other_side == 0)    // no bar at this price
                 || (contains_p * s_other_side < 0)) // bar with same price at the opposite
-                executed_orders.push_back(o_bar);
+                executed_orders.push_back(Bar(orig_p, s_other_side * orig_v));
             else // bar on the same side
             {
                 double curr_v = getVolumeAt(s_other_side, PriceLocation(s_other_side, orig_p));
