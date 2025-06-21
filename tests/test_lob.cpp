@@ -585,6 +585,27 @@ BOOST_AUTO_TEST_CASE(test_absorb_general_order_other_side_lo_part_exe)
     BOOST_CHECK_EQUAL(lob.ContainsPrice(p_new), 1);
 }
 
+BOOST_AUTO_TEST_CASE(test_absorb_general_order_other_side_lo_diff_price)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 103.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {99.0, 98.0, 97.0};
+    std::vector<double> bid_volumes = {150.0, 100.0, 200.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    OrderType o_type = LIMITORDER;
+
+    double p_new = 98.5, v_new = 250.0, s_new = 1;
+    std::vector<Bar> eos = lob.AbsorbGeneralOrder(o_type, p_new, v_new, s_new);
+
+    BOOST_CHECK_EQUAL(eos.size(), 1);
+    BOOST_CHECK_CLOSE(eos[0].Volume(), -150.0, EPSILON);
+    // the new buy LO is absorbed by existing sell LO at price 99 and partly executed
+    // outstanding volumes are posted on the other side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(p_new), 1);
+    BOOST_CHECK_CLOSE(lob.ask(), p_new, EPSILON);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 // integrated testing under various scenarios

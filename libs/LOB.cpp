@@ -237,35 +237,48 @@ std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, i
     {
     case LIMITORDER:
     {
-        // need to keep track of whether exisiting orders are executed when the new order arrives
-        LOB orig_lob(*this);
-        // existing orders only get executed when an order on the other side comes
-        const std::vector<Bar> &orig_bars_other_side = s > 0 ? orig_lob.bids : orig_lob.asks;
-        int s_other_side = -s;
-        AddLimitOrder(s, p, v);
-
-        /* TODO: refactor this part so that executed orders are returned in AddLimitOrder
-        compare orders on the other side and see whether anything has changed:
-        1.  If current bars contains the bar at the same side,
-            either volume is not touched, or the volume is touched (exercised);
-        2.  If current bars contains the bar at the opposite side,
-            or doesn't contain at all,
-            then the bar is already executed in full.
-        */
-        for (auto o_bar : orig_bars_other_side)
+        bool illegalLO = (s > 0 && p <= bid()) || (s < 0 && p >= ask());
+        while (illegalLO && v > __DBL_EPSILON__)
         {
-            double orig_p = o_bar.Price();
-            double orig_v = o_bar.Volume();
-            int contains_p = ContainsPrice(orig_p);
-            if ((contains_p * s_other_side == 0)    // no bar at this price
-                || (contains_p * s_other_side < 0)) // bar with same price at the opposite
-                executed_orders.push_back(Bar(orig_p, s_other_side * orig_v));
-            else // bar on the same side
+            double p_lo = -s > 0 ? ask() : bid();
+            double v_lo = getVolumeAt(-s, PriceLocation(-s, p_lo));
+            double v_exe = std::min(v_lo, v);
+            v -= v_exe;
+            AbsorbMarketOrder(executed_orders, v_exe, s);
+            illegalLO = (s > 0 && p <= bid()) || (s < 0 && p >= ask());
+        }
+        if (v > __DBL_EPSILON__)
+        {
+            // need to keep track of whether exisiting orders are executed when the new order arrives
+            LOB orig_lob(*this);
+            // existing orders only get executed when an order on the other side comes
+            const std::vector<Bar> &orig_bars_other_side = s > 0 ? orig_lob.bids : orig_lob.asks;
+            int s_other_side = -s;
+            AddLimitOrder(s, p, v);
+
+            /* TODO: refactor this part so that executed orders are returned in AddLimitOrder
+            compare orders on the other side and see whether anything has changed:
+            1.  If current bars contains the bar at the same side,
+                either volume is not touched, or the volume is touched (exercised);
+            2.  If current bars contains the bar at the opposite side,
+                or doesn't contain at all,
+                then the bar is already executed in full.
+            */
+            for (auto o_bar : orig_bars_other_side)
             {
-                double curr_v = getVolumeAt(s_other_side, PriceLocation(s_other_side, orig_p));
-                double diff_v = orig_v - curr_v;
-                if (diff_v > __DBL_EPSILON__)
-                    executed_orders.push_back(Bar(orig_p, s_other_side * diff_v));
+                double orig_p = o_bar.Price();
+                double orig_v = o_bar.Volume();
+                int contains_p = ContainsPrice(orig_p);
+                if ((contains_p * s_other_side == 0)    // no bar at this price
+                    || (contains_p * s_other_side < 0)) // bar with same price at the opposite
+                    executed_orders.push_back(Bar(orig_p, s_other_side * orig_v));
+                else // bar on the same side
+                {
+                    double curr_v = getVolumeAt(s_other_side, PriceLocation(s_other_side, orig_p));
+                    double diff_v = orig_v - curr_v;
+                    if (diff_v > __DBL_EPSILON__)
+                        executed_orders.push_back(Bar(orig_p, s_other_side * diff_v));
+                }
             }
         }
         break;
