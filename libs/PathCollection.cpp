@@ -150,8 +150,8 @@ void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
             max_p = std::max(max_p, mid_p[i_p]);
         }
         mean_shocks /= (int)mid_p.size();
-        for (int i_p = 0; i_p < mid_p.size() - 1; i_p++)
-            v_1_path += std::pow(mean_shocks - mid_p[i_p], 2);
+        for (int i_p = 0; i_p < mid_p_shocks.size() - 1; i_p++)
+            v_1_path += std::pow(mean_shocks - mid_p_shocks[i_p], 2);
 
         // 1.1 volatility 1
         v_1 += (v_1_path / (double)mid_p.size());
@@ -175,7 +175,8 @@ void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
         for (int i_p = 0; i_p < lobs.size() - 1; i_p++)
         {
             const LOB &lob = lobs[i_p];
-            l_1_path += (lob.ask() - lob.bid());
+            double ba_spr = lob.ask() - lob.bid();
+            l_1_path += ba_spr;
         }
         l_1 += (l_1_path / (double)lobs.size());
     }
