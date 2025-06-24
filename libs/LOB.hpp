@@ -9,6 +9,7 @@ class LOB
 {
 private:
     double decay_coef;
+    bool safety_check;
     std::vector<Bar> bids; // all the buy orders with ascending prices
     std::vector<Bar> asks; // all the sell orders with ascending prices
 
@@ -26,6 +27,7 @@ public:
     inline double mid() const { return (ask() + bid()) * 0.5; }
     inline bool oneSideEmpty() const { return !asks.size() || !bids.size(); }
     inline bool bothSidesEmpty() const { return !asks.size() && !asks.size(); }
+    inline void setSafetyCheck(bool state) { safety_check = state; }
 
     const Bar &getBarAt(int s, int pos) const;
     double getVolumeAt(int s, int pos) const;
@@ -33,6 +35,7 @@ public:
 
     int ContainsPrice(double p) const;
     int PriceLocation(int s, double p) const;
+    void CheckUnsafeCall() const;
     void PrintLOB() const;
 
     void AddLimitOrder(int s, double p, double v);

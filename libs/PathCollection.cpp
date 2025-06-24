@@ -12,7 +12,9 @@ Path::Path(
       ran_info(_ran_info)
 {
     status = 0;
-    lobs.resize(1, _path_info.lob_0);
+    LOB lob_0(_path_info.lob_0);
+    lob_0.setSafetyCheck(true); // activate safety check for recording liquidity crisis
+    lobs.resize(1, lob_0);
     mid_prices.resize(1, _path_info.lob_0.mid());
     hedger_deltas.resize(1, 0.0);
     hedger_gammas.resize(1, 0.0);

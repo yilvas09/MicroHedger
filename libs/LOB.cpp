@@ -6,10 +6,12 @@ LOB::LOB()
     bids.resize(0);
     asks.resize(0);
     decay_coef = 0.0;
+    safety_check = false;
 }
 
 LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
          const std::vector<double> &bps, const std::vector<double> &bvs)
+    : LOB()
 {
     if (aps.size() != avs.size() || bps.size() != bvs.size())
         throw std::invalid_argument("Price and volume vectors must have same size");
@@ -23,7 +25,6 @@ LOB::LOB(const std::vector<double> &aps, const std::vector<double> &avs,
         for (int j = 0; j < ps_tmp.size(); j++)
             bars.push_back(Bar(ps_tmp[j], vs_tmp[j]));
     }
-    decay_coef = 0.0;
 }
 
 LOB::LOB(double _d_coef,
@@ -37,6 +38,7 @@ LOB::LOB(double _d_coef,
 // getter functions to obtain a specific bar in the lob
 const Bar &LOB::getBarAt(int s, int pos) const
 {
+    CheckUnsafeCall();
     if (!s)
         throw std::invalid_argument("Invalid sign; must be non-zero integer.");
     const std::vector<Bar> &bars = s > 0 ? asks : bids;
@@ -49,17 +51,26 @@ const Bar &LOB::getBarAt(int s, int pos) const
 
 double LOB::getVolumeAt(int s, int pos) const
 {
+    CheckUnsafeCall();
     return getBarAt(s, pos).Volume();
 }
 
 double LOB::getPriceAt(int s, int pos) const
 {
+    CheckUnsafeCall();
     return getBarAt(s, pos).Price();
+}
+
+void LOB::CheckUnsafeCall() const
+{
+    if (safety_check && oneSideEmpty())
+        throw std::overflow_error("One side of the LOB is empty. Potential malfunction under market failure.");
 }
 
 // check whether the current LOB contains orders at price p; returns 1 (sell orders) or -1 (buy orders)
 int LOB::ContainsPrice(double p) const
 {
+    CheckUnsafeCall();
     if (p > bid() && p < ask())
         return 0;
     const int sign = p <= bid() ? -1 : 1;
@@ -75,6 +86,7 @@ int LOB::ContainsPrice(double p) const
 // return the location of a price in one side of the lob (s = 1: asks; s = -1: bids), in ascending order
 int LOB::PriceLocation(int s, double p) const
 {
+    CheckUnsafeCall();
     if (s == 0)
         return -1;
 
@@ -92,6 +104,7 @@ int LOB::PriceLocation(int s, double p) const
 // add a limit order of price p and volume v, with sign s (s = 1, an ask/sell order; s = -1, a bid/buy order)
 void LOB::AddLimitOrder(int s, double p, double v)
 {
+    CheckUnsafeCall();
     if (s == 0)
         return;
     int state = ContainsPrice(p); // 0 (no orders at p), 1 (sell orders at p), -1 (buy orders at p)
@@ -131,6 +144,7 @@ void LOB::AddLimitOrder(int s, double p, double v)
 // cancel a limit order of price and and volume v
 void LOB::CancelLimitOrder(int s, double p, double v)
 {
+    CheckUnsafeCall();
     int state = ContainsPrice(p); // 0 (no orders at p), 1 (sell orders at p), -1 (buy orders at p)
     if (s * state <= 0)           // if no orders at the specified side, do nothing
         return;
@@ -148,6 +162,7 @@ double LOB::AbsorbMarketOrder(std::vector<Bar> &eos,
                               double &v,
                               int s)
 {
+    CheckUnsafeCall();
     if (s != -1 && s != 1)
         throw std::invalid_argument("Invalid sign for market orders. Must be -1 or 1.");
     eos.resize(0);
@@ -208,6 +223,7 @@ void LOB::PrintLOB() const
 // decay resting orders in current LOB with a decay coefficient
 void LOB::DecayOrders(double d_coef)
 {
+    CheckUnsafeCall();
     double p_mid = mid();
     for (int i = 0; i < 2; i++)
     {
@@ -230,6 +246,7 @@ void LOB::DecayOrders()
 // return exercised limit order, sell/buy direction is marked by the sign of bar.volume
 std::vector<Bar> LOB::AbsorbGeneralOrder(OrderType o_type, double p, double v, int s)
 {
+    CheckUnsafeCall();
     std::vector<Bar> executed_orders;
     if (s == 0)
         return executed_orders;

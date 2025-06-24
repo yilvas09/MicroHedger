@@ -58,6 +58,24 @@ BOOST_AUTO_TEST_CASE(test_empty_sides)
     BOOST_CHECK_THROW(lob.getBarAt(-1, 0), std::invalid_argument);
 }
 
+
+BOOST_AUTO_TEST_CASE(test_safety_checks)
+{
+    std::vector<double> ask_prices = {101.0, 102.0};
+    std::vector<double> ask_volumes = {100.0, 200.0};
+    std::vector<double> bid_prices; // no bid orders
+    std::vector<double> bid_volumes;
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+    lob.setSafetyCheck(true);
+
+    BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON);
+    BOOST_CHECK(lob.oneSideEmpty());
+    BOOST_CHECK_THROW(lob.getBarAt(1, 1), std::overflow_error);
+    BOOST_CHECK_THROW(lob.getBarAt(-1, 0), std::overflow_error);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 // test LOB::ContainsPrice
