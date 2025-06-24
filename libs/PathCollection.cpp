@@ -37,64 +37,66 @@ void Path::ClearPath()
 void Path::GenOnePath()
 {
     Random rd(ran_info);
-    for (int day = 0; day < n_days; day++)
+    try
     {
-        double time = day;
-        hedger.ResetGammaContract(time, lobs.back());
-        for (int hour = 0; hour < n_hours; hour++)
+        for (int day = 0; day < n_days; day++)
         {
-            // news arrives and fundamental price changes
-            const double ph = fund_prices.back();
-            for (int quar = 0; quar < n_quarters; quar++)
+            double time = day;
+            hedger.ResetGammaContract(time, lobs.back());
+            for (int hour = 0; hour < n_hours; hour++)
             {
-                // create a copy of current LOB
-                LOB currLOB(lobs.back());
-                const int n_ticks = rd.GenerateNumOrders();
-                std::vector<std::vector<Bar>> exe_orders;
-                for (int tick = 0; tick < n_ticks; tick++)
+                // news arrives and fundamental price changes
+                const double ph = fund_prices.back();
+                for (int quar = 0; quar < n_quarters; quar++)
                 {
-                    currLOB.DecayOrders();
-                    double p = 0.0, v = 0.0;
-                    int s = 0; // sell: 1, buy: -1
-                    enum OrderType order_type;
-                    rd.GenerateOrder(order_type, p, v, s, currLOB.mid(), ph); // generate a new order
-                    // update LOB to include the order and report what orders are exercised
-                    std::vector<Bar> exe_order = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
-                    exe_orders.push_back(exe_order);
-                    mid_prices.push_back(currLOB.mid());
-                }
-                fund_prices.push_back(rd.GenerateShockedPrice(ph));
-                lobs.push_back(currLOB);
-                if (currLOB.oneSideEmpty())
-                {
-                    status = -1;
-                    return;
-                }
+                    // create a copy of current LOB
+                    LOB currLOB(lobs.back());
+                    const int n_ticks = rd.GenerateNumOrders();
+                    std::vector<std::vector<Bar>> exe_orders;
+                    for (int tick = 0; tick < n_ticks; tick++)
+                    {
+                        currLOB.DecayOrders();
+                        double p = 0.0, v = 0.0;
+                        int s = 0; // sell: 1, buy: -1
+                        enum OrderType order_type;
+                        rd.GenerateOrder(order_type, p, v, s, currLOB.mid(), ph); // generate a new order
+                        // update LOB to include the order and report what orders are exercised
+                        std::vector<Bar> exe_order = currLOB.AbsorbGeneralOrder(order_type, p, v, s);
+                        exe_orders.push_back(exe_order);
+                        mid_prices.push_back(currLOB.mid());
+                    }
+                    fund_prices.push_back(rd.GenerateShockedPrice(ph));
+                    lobs.push_back(currLOB);
 
-                // based on execution results of this quarter hedger knows his state
-                if (!hedger.IsMyOrderExecuted(exe_orders))
-                {
-                    // he either removes posted but unexecuted order (if any)
-                    currLOB.CancelLimitOrder(Utils::sgn(hedger.getOrderVolume()), hedger.getOrderPrice(), abs(hedger.getOrderVolume()));
-                    // and submit new order based on current LOB
-                    double p_hedger = 0.0, v_hedger = 0.0, t_q = (double)quar / n_quarters;
-                    int s_hedger = 0;
-                    hedger.PostOrder(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, t_q);
-                    // LOB absorb hedger's order
-                    std::vector<Bar> exe_order_hedger = currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, s_hedger);
-                    // hedger updates inventories
-                    hedger.UpdateInventories(std::vector<std::vector<Bar>>(1, exe_order_hedger));
+                    // based on execution results of this quarter hedger knows his state
+                    if (!hedger.IsMyOrderExecuted(exe_orders))
+                    {
+                        // he either removes posted but unexecuted order (if any)
+                        currLOB.CancelLimitOrder(Utils::sgn(hedger.getOrderVolume()), hedger.getOrderPrice(), abs(hedger.getOrderVolume()));
+                        // and submit new order based on current LOB
+                        double p_hedger = 0.0, v_hedger = 0.0, t_q = (double)quar / n_quarters;
+                        int s_hedger = 0;
+                        hedger.PostOrder(p_hedger, v_hedger, s_hedger, exe_orders, currLOB, t_q);
+                        // LOB absorb hedger's order
+                        std::vector<Bar> exe_order_hedger = currLOB.AbsorbGeneralOrder(LIMITORDER, p_hedger, v_hedger, s_hedger);
+                        // hedger updates inventories
+                        hedger.UpdateInventories(std::vector<std::vector<Bar>>(1, exe_order_hedger));
+                    }
+                    else
+                    {
+                        // or he updates his inventories
+                        hedger.UpdateInventories(exe_orders);
+                    }
                 }
-                else
-                {
-                    // or he updates his inventories
-                    hedger.UpdateInventories(exe_orders);
-                }
+                // delta update from hedger's reevaluation, calculate gamma
+                time = day + (hour + 1) * 1. / n_hours;
+                hedger.ReCalcGreeks(time, lobs.back());
             }
-            // delta update from hedger's reevaluation, calculate gamma
-            time = day + (hour + 1) * 1. / n_hours;
-            hedger.ReCalcGreeks(time, lobs.back());
         }
+    }
+    catch (const std::out_of_range &e)
+    {
+        status = -1;
     }
 }
 

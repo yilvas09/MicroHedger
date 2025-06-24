@@ -8,11 +8,11 @@
 int main()
 {
     const int T = 5;
-    const int H = 10;
+    const int H = 5;
     const int Q = 4;
     const int total_time = T * H * Q;
     const int seed = 9999;
-    const int n_samples = 1;
+    const int n_samples = 1000;
 
     const double p0 = 5.0;
     const std::vector<double> aps0 = {5.02, 5.04, 5.06};
