@@ -64,7 +64,7 @@ double LOB::getPriceAt(int s, int pos) const
 void LOB::CheckUnsafeCall() const
 {
     if (safety_check && oneSideEmpty())
-        throw std::overflow_error("One side of the LOB is empty. Potential malfunction under market failure.");
+        throw std::out_of_range("One side of the LOB is empty. Potential malfunction under market failure.");
 }
 
 // check whether the current LOB contains orders at price p; returns 1 (sell orders) or -1 (buy orders)

@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(test_safety_checks)
     BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON);
     BOOST_CHECK(lob.oneSideEmpty());
-    BOOST_CHECK_THROW(lob.getBarAt(1, 1), std::overflow_error);
-    BOOST_CHECK_THROW(lob.getBarAt(-1, 0), std::overflow_error);
+    BOOST_CHECK_THROW(lob.getBarAt(1, 1), std::out_of_range);
+    BOOST_CHECK_THROW(lob.getBarAt(-1, 0), std::out_of_range);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
