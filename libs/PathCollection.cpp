@@ -163,8 +163,8 @@ void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
         v_2 += (max_p - min_p);
         // TODO: 1.3-1.4 quantile shocks to be implemented
     }
-    v_1 /= n_paths;
-    v_2 /= n_paths;
+    v_1 /= n_valid_paths;
+    v_2 /= n_valid_paths;
     res.push_back(v_1);
     res.push_back(v_2);
 
@@ -184,7 +184,7 @@ void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
         }
         l_1 += (l_1_path / (double)lobs.size());
     }
-    l_1 /= n_paths;
+    l_1 /= n_valid_paths;
     res.push_back(l_1);
 
     // 3. price discovery
@@ -200,6 +200,7 @@ void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
         }
         d_1 += d_1_path / (int)lobs.size();
     }
+    d_1 /= n_valid_paths;
     res.push_back(d_1);
 }
 
