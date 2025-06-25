@@ -1,6 +1,7 @@
 #include <vector>
 #include <memory>
 #include "PathCollection.hpp"
+#include <boost/format.hpp>
 
 Path::Path(
     const PathInfo &_path_info,
@@ -128,7 +129,7 @@ void PathCollection::GeneratePaths()
         snapshots[i].GenOnePath();
 }
 
-void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
+void PathCollection::CalcLiquidityMetrics(std::vector<double> &res) const
 {
     res.resize(0);
     // 0. failure rate
@@ -204,7 +205,7 @@ void PathCollection::CalcLiquidityMetrics(std::vector<double> &res)
     res.push_back(d_1);
 }
 
-void PathCollection::FindPathsWithStatus(int status, std::vector<int> &indices)
+void PathCollection::FindPathsWithStatus(int status, std::vector<int> &indices) const
 {
     indices.resize(0);
     for (int i = 0; i < snapshots.size(); i++)
@@ -212,4 +213,38 @@ void PathCollection::FindPathsWithStatus(int status, std::vector<int> &indices)
         if (snapshots[i].Status() == status)
             indices.push_back(i);
     }
+}
+
+void PathCollection::PrintSimulationResults() const
+{
+    std::vector<double> results;
+    CalcLiquidityMetrics(results);
+    std::cout << "==============================" << std::endl;
+    for (int i = 0; i < results.size(); i++)
+    {
+        std::string res_row;
+        switch (i)
+        {
+        case 0:
+            res_row += "Market failure rate:\t";
+            break;
+        case 1:
+            res_row += "Volatility - std.dev.:\t";
+            break;
+        case 2:
+            res_row += "Volatility - high-low spread:\t";
+            break;
+        case 3:
+            res_row += "Liquidity - avg. bid-ask spread:\t";
+            break;
+        case 4:
+            res_row += "Price discovery - distance btw. mid and fund.:\t";
+            break;
+        default:
+            break;
+        }
+        res_row += boost::str(boost::format("%1$.4f\t") % results[i]);
+        std::cout << res_row << std::endl;
+    }
+    std::cout << "==============================" << std::endl;
 }

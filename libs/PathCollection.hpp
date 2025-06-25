@@ -73,6 +73,7 @@ public:
     ~PathCollection();
 
     void GeneratePaths();
-    void CalcLiquidityMetrics(std::vector<double> &res);
-    void FindPathsWithStatus(int status, std::vector<int> &indices);
+    void CalcLiquidityMetrics(std::vector<double> &res) const;
+    void FindPathsWithStatus(int status, std::vector<int> &indices) const;
+    void PrintSimulationResults() const;
 };

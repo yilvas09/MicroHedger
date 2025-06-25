@@ -19,11 +19,11 @@ int main()
     const std::vector<double> avs0(aps0.size(), 10.0);
     const std::vector<double> bps0 = {4.94, 4.96, 4.98};
     const std::vector<double> bvs0(bps0.size(), 10.0);
-    const double decay_coefficient = 0.05;
+    const double decay_coefficient = 0.00;
     const LOB lob0(decay_coefficient, aps0, avs0, bps0, bvs0);
     const double vol_news = 0.0;
     const double order_arrival_intensity = 1.0;
-    const double p_otype = 0.25; // prob of getting market orders
+    const double p_otype = 0.1; // prob of getting market orders
     const double p_info = 0.3; // prob of getting informed orders
     const double vol_min = 0;
     const double vol_max = 1;
@@ -38,11 +38,12 @@ int main()
 
     PathCollection paths(n_samples, pi, ri);
     paths.GeneratePaths();
+    paths.PrintSimulationResults();
 
-    std::vector<int> normal_paths_id;
-    paths.FindPathsWithStatus(0, normal_paths_id);
-    std::vector<double> results;
-    paths.CalcLiquidityMetrics(results);
+    // std::vector<int> normal_paths_id;
+    // paths.FindPathsWithStatus(0, normal_paths_id);
+    // std::vector<double> results;
+    // paths.CalcLiquidityMetrics(results);
 
     return 0;
 }
