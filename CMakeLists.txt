@@ -12,8 +12,8 @@ add_subdirectory(libs)
 add_subdirectory(tests)
 
 add_executable(${PROJECT_NAME} main.cpp)
-target_link_libraries(${PROJECT_NAME} lob_lib)
-target_link_libraries(${PROJECT_NAME} players_lib)
-target_link_libraries(${PROJECT_NAME} utils_lib)
-target_link_libraries(${PROJECT_NAME} option_lib)
-target_link_libraries(${PROJECT_NAME} path_lib)
+# target_link_libraries(${PROJECT_NAME} utils_lib)
+# target_link_libraries(${PROJECT_NAME} lob_lib) # contains boost
+# target_link_libraries(${PROJECT_NAME} option_lib) # contains utils_lib
+# target_link_libraries(${PROJECT_NAME} players_lib) # contains lob_lib, option_lib
+target_link_libraries(${PROJECT_NAME} path_lib) # contains players_lib

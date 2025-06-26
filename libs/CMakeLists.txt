@@ -27,3 +27,4 @@ set(SOURCES_PATHS
     PathCollection.cpp
 )
 add_library(path_lib ${SOURCES_PATHS})
+target_link_libraries(path_lib players_lib)
