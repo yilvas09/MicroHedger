@@ -14,8 +14,8 @@ BOOST_AUTO_TEST_CASE(test_default_constructor)
 {
     LOB lob;
 
-    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON);
-    BOOST_CHECK_CLOSE(lob.ask(), 0.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.bid(), -__DBL_MAX__, EPSILON);
+    BOOST_CHECK_CLOSE(lob.ask(), __DBL_MAX__, EPSILON);
     BOOST_CHECK_CLOSE(lob.mid(), 0.0, EPSILON);
     BOOST_CHECK(lob.oneSideEmpty());
     BOOST_CHECK_THROW(lob.getBarAt(1, 0), std::invalid_argument);
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(test_empty_sides)
     LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
 
     BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON);
-    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.bid(), -__DBL_MAX__, EPSILON);
     BOOST_CHECK(lob.oneSideEmpty());
     BOOST_CHECK_NO_THROW(lob.getBarAt(1, 1));
     BOOST_CHECK_THROW(lob.getBarAt(-1, 0), std::invalid_argument);
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_safety_checks)
     lob.setSafetyCheck(true);
 
     BOOST_CHECK_CLOSE(lob.ask(), 101.0, EPSILON);
-    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.bid(), -__DBL_MAX__, EPSILON);
     BOOST_CHECK(lob.oneSideEmpty());
     BOOST_CHECK_THROW(lob.getBarAt(1, 1), std::out_of_range);
     BOOST_CHECK_THROW(lob.getBarAt(-1, 0), std::out_of_range);
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE(test_add_illegal_limit_orders)
     BOOST_CHECK_CLOSE(eos[0].Volume(), 50.0, EPSILON);
 
     v1 = 100.0;
-    lob.AbsorbLimitOrder(eos, v1, 101.0, -1); // buy order at ask price
+    lob.AbsorbLimitOrder(eos, v1, 101.0, -1);     // buy order at ask price
     BOOST_CHECK_CLOSE(lob.ask(), 102.0, EPSILON); // the 101 bar is gone
     BOOST_CHECK_EQUAL(eos.size(), 1);
     BOOST_CHECK_CLOSE(eos[0].Price(), 101.0, EPSILON);
@@ -318,13 +318,13 @@ BOOST_AUTO_TEST_CASE(test_cancel_limit_order_skip)
 {
     LOB lob;
 
-    lob.AddLimitOrder(1, 102.0, 100.0);         // ask
-    lob.AddLimitOrder(1, 101.0, 150.0);         // ask, lower price
-    lob.AddLimitOrder(1, 103.0, 200.0);         // ask, higher price
-    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON); // no bid orders
+    lob.AddLimitOrder(1, 102.0, 100.0);                  // ask
+    lob.AddLimitOrder(1, 101.0, 150.0);                  // ask, lower price
+    lob.AddLimitOrder(1, 103.0, 200.0);                  // ask, higher price
+    BOOST_CHECK_CLOSE(lob.bid(), -__DBL_MAX__, EPSILON); // no bid orders
 
     lob.CancelLimitOrder(-1, 101.0, 150.0);
-    BOOST_CHECK_CLOSE(lob.bid(), 0.0, EPSILON); // still no bid orders
+    BOOST_CHECK_CLOSE(lob.bid(), -__DBL_MAX__, EPSILON); // still no bid orders
     BOOST_CHECK(true);
 }
 

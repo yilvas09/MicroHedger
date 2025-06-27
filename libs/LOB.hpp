@@ -22,8 +22,8 @@ public:
         const std::vector<double> &bps, const std::vector<double> &bvs);
     ~LOB() {}
 
-    inline double bid() const { return bids.size() ? bids.back().Price() : 0.0; }
-    inline double ask() const { return asks.size() ? asks.front().Price() : 0.0; }
+    inline double bid() const { return bids.size() ? bids.back().Price() : -__DBL_MAX__; }
+    inline double ask() const { return asks.size() ? asks.front().Price() : __DBL_MAX__; }
     inline double mid() const { return (ask() + bid()) * 0.5; }
     inline bool oneSideEmpty() const { return !asks.size() || !bids.size(); }
     inline bool bothSidesEmpty() const { return !asks.size() && !asks.size(); }
