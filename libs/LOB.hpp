@@ -43,6 +43,10 @@ public:
     double AbsorbMarketOrder(std::vector<Bar> &eos, // [O] - executed orders
                              double &v,             // [I] and [O] - input volume and outstanding volume
                              int s);                // [I] - sign of the market order
+    void AbsorbLimitOrder(std::vector<Bar> &eos,
+                          double &v,
+                          double p,
+                          int s);
     void DecayOrders(double d_coef);
     void DecayOrders();
     std::vector<Bar> AbsorbGeneralOrder(OrderType o_type, // [I] - order type
