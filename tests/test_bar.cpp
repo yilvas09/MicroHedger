@@ -33,6 +33,22 @@ BOOST_AUTO_TEST_CASE(test_parameterized_constructor)
     BOOST_CHECK_EQUAL(bar.IsEmpty(), FALSE);
 }
 
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize)
+{
+    Bar::SetTickSize(0.1);
+    Bar bar(100.45, 250.0);
+    BOOST_CHECK_CLOSE(bar.Price(), 100.5, EPSILON);
+    BOOST_CHECK_CLOSE(bar.Volume(), 250.0, EPSILON);
+    BOOST_CHECK_EQUAL(bar.IsEmptyBar(), FALSE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), FALSE);
+
+    bar = Bar(100.42, 0.0);
+    BOOST_CHECK_CLOSE(bar.Price(), 100.4, EPSILON);
+    BOOST_CHECK_EQUAL(bar.IsEmptyBar(), FALSE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), TRUE);
+    BOOST_CHECK_EQUAL(bar.IsEmpty(), FALSE);
+}
+
 BOOST_AUTO_TEST_CASE(test_negative_values)
 {
     Bar bar(-50.0, -100.0);
