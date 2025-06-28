@@ -1,11 +1,12 @@
 #include "Bar.hpp"
 
-double Bar::tick_size = __DBL_EPSILON__;
+const double MIN_TICKSIZE = 2 * __DBL_EPSILON__;
+double Bar::tick_size = MIN_TICKSIZE;
 
 Bar::Bar(double p, double v)
     : volume(v)
 {
-    price = tick_size <= __DBL_EPSILON__ ? p : std::round(p / tick_size) * tick_size;
+    price = tick_size <= 2 * __DBL_EPSILON__ ? p : std::round(p / tick_size) * tick_size;
 }
 
 Bar::Bar()
@@ -20,19 +21,29 @@ bool Bar::PriceSameAs(double p) const
 
 bool Bar::PriceHigherThan(double p) const
 {
-    return p > price + tick_size / 2;
+    return price - tick_size / 2 > p;
 }
 
 bool Bar::PriceLowerThan(double p) const
 {
-    return p < price - tick_size / 2;
+    return price + tick_size / 2 < p;
+}
+
+bool Bar::PriceHigherEqual(double p) const
+{
+    return PriceHigherThan(p) || PriceSameAs(p);
+}
+
+bool Bar::PriceLowerEqual(double p) const
+{
+    return PriceLowerThan(p) || PriceSameAs(p);
 }
 
 void Bar::SetTickSize(double ts)
 {
-    if (tick_size > __DBL_EPSILON__)
+    if (tick_size > MIN_TICKSIZE)
         throw std::logic_error("Tick size cannot be set again as it has already been set to non zero value.");
-    if (ts < __DBL_EPSILON__)
+    if (ts < MIN_TICKSIZE)
         throw std::invalid_argument("Tick size must be non-zero positive number.");
     tick_size = ts;
 }

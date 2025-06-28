@@ -26,8 +26,11 @@ public:
     bool PriceSameAs(double p) const;
     bool PriceHigherThan(double p) const;
     bool PriceLowerThan(double p) const;
+    bool PriceHigherEqual(double p) const;
+    bool PriceLowerEqual(double p) const;
 
     static void SetTickSize(double ts);
+    inline static double TickSize() { return tick_size; }
 
     int ExecuteAgainst(double &v);
     void AddVolumesBy(double v);
