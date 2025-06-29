@@ -283,8 +283,7 @@ void LOB::AbsorbLimitOrder(std::vector<Bar> &eos,
     bool illegalLO = (s > 0 && Bid().PriceHigherEqual(p)) || (s < 0 && Ask().PriceLowerEqual(p));
     while (illegalLO && v > __DBL_EPSILON__)
     {
-        double p_lo = -s > 0 ? ask() : bid();
-        double v_lo = getVolumeAt(-s, PriceLocation(-s, p_lo));
+        double v_lo = -s > 0 ? Ask().Volume() : Bid().Volume();
         double v_exe = std::min(v_lo, v);
         v -= v_exe;
         AbsorbMarketOrder(eos, v_exe, s);

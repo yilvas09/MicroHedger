@@ -437,8 +437,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_basic)
     BOOST_CHECK_CLOSE(lob.bid(), 99.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.mid(), 100.0, EPSILON);
 
-    double ini_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask()));
-    double ini_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid()));
+    double ini_ask_vol = lob.Ask().Volume();
+    double ini_bid_vol = lob.Bid().Volume();
 
     // Apply decay
     lob.DecayOrders();
@@ -451,8 +451,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_basic)
     // Verify that decay occurred, i.e. volumes changed
     double expected_decay_factor_ask = exp(-d_coef * pow(lob.mid() - lob.ask(), 2));
     double expected_decay_factor_bid = exp(-d_coef * pow(lob.mid() - lob.bid(), 2));
-    double actual_decay_factor_ask = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask())) / ini_ask_vol;
-    double actual_decay_factor_bid = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid())) / ini_bid_vol;
+    double actual_decay_factor_ask = lob.Ask().Volume() / ini_ask_vol;
+    double actual_decay_factor_bid = lob.Bid().Volume() / ini_bid_vol;
     BOOST_CHECK_CLOSE(actual_decay_factor_ask, expected_decay_factor_ask, EPSILON);
     BOOST_CHECK_CLOSE(actual_decay_factor_bid, expected_decay_factor_bid, EPSILON);
 }
@@ -471,8 +471,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_zero_coefficient)
     double initial_ask = lob.ask();
     double initial_bid = lob.bid();
     double initial_mid = lob.mid();
-    double initial_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, initial_ask));
-    double initial_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, initial_bid));
+    double initial_ask_vol = lob.Ask().Volume();
+    double initial_bid_vol = lob.Bid().Volume();
 
     // Apply zero decay coefficient (no decay should occur) TODO: check volume same
     lob.DecayOrders(0.0);
@@ -481,8 +481,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_zero_coefficient)
     BOOST_CHECK_CLOSE(lob.ask(), initial_ask, EPSILON);
     BOOST_CHECK_CLOSE(lob.bid(), initial_bid, EPSILON);
     BOOST_CHECK_CLOSE(lob.mid(), initial_mid, EPSILON);
-    BOOST_CHECK_CLOSE(lob.getVolumeAt(1, 0), initial_ask_vol, EPSILON);
-    BOOST_CHECK_CLOSE(lob.getVolumeAt(-1, -1), initial_bid_vol, EPSILON);
+    BOOST_CHECK_CLOSE(lob.Ask().Volume(), initial_ask_vol, EPSILON);
+    BOOST_CHECK_CLOSE(lob.Bid().Volume(), initial_bid_vol, EPSILON);
 }
 
 BOOST_AUTO_TEST_CASE(test_decay_orders_symmetric_decay)
@@ -503,8 +503,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_symmetric_decay)
 
     lob.DecayOrders(d_coef);
 
-    double actual_decay_factor_ask = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask())) / ask_volumes[0];
-    double actual_decay_factor_bid = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid())) / bid_volumes[0];
+    double actual_decay_factor_ask = lob.Ask().Volume() / ask_volumes[0];
+    double actual_decay_factor_bid = lob.Bid().Volume() / bid_volumes[0];
 
     // After decay, spread should remain the same since decay is symmetric
     BOOST_CHECK_CLOSE(lob.mid(), p_mid, EPSILON);
@@ -550,8 +550,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_negative_coefficient)
     LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
 
     double initial_mid = lob.mid();
-    double ini_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask()));
-    double ini_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid()));
+    double ini_ask_vol = lob.Ask().Volume();
+    double ini_bid_vol = lob.Bid().Volume();
 
     // Apply negative decay coefficient
     double d_coef = -0.01;
@@ -564,8 +564,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_negative_coefficient)
     // Verify that decay occurred, i.e. volumes changed
     double expected_decay_factor_ask = exp(-d_coef * pow(lob.mid() - lob.ask(), 2));
     double expected_decay_factor_bid = exp(-d_coef * pow(lob.mid() - lob.bid(), 2));
-    double actual_decay_factor_ask = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask())) / ini_ask_vol;
-    double actual_decay_factor_bid = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid())) / ini_bid_vol;
+    double actual_decay_factor_ask = lob.Ask().Volume() / ini_ask_vol;
+    double actual_decay_factor_bid = lob.Bid().Volume() / ini_bid_vol;
     BOOST_CHECK_CLOSE(actual_decay_factor_ask, expected_decay_factor_ask, EPSILON);
     BOOST_CHECK_CLOSE(actual_decay_factor_bid, expected_decay_factor_bid, EPSILON);
 }
