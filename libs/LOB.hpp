@@ -25,6 +25,8 @@ public:
     inline double bid() const { return bids.size() ? bids.back().Price() : -__DBL_MAX__; }
     inline double ask() const { return asks.size() ? asks.front().Price() : __DBL_MAX__; }
     inline double mid() const { return (ask() + bid()) * 0.5; }
+    inline const Bar &Bid() const { return bids.size() ? bids.back() : theBidBar; }
+    inline const Bar &Ask() const { return asks.size() ? asks.front() : theAskBar; }
     inline bool oneSideEmpty() const { return !asks.size() || !bids.size(); }
     inline bool bothSidesEmpty() const { return !asks.size() && !asks.size(); }
     inline void setSafetyCheck(bool state) { safety_check = state; }

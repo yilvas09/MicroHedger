@@ -6,7 +6,7 @@ double Bar::tick_size = MIN_TICKSIZE;
 Bar::Bar(double p, double v)
     : volume(v)
 {
-    price = tick_size <= 2 * __DBL_EPSILON__ ? p : std::round(p / tick_size) * tick_size;
+    price = tick_size <= MIN_TICKSIZE ? p : std::round(p / tick_size) * tick_size;
 }
 
 Bar::Bar()

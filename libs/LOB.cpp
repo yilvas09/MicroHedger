@@ -71,13 +71,15 @@ void LOB::CheckUnsafeCall() const
 int LOB::ContainsPrice(double p) const
 {
     CheckUnsafeCall();
-    if (p > bid() && p < ask())
+    if (Bid().PriceLowerThan(p) && Ask().PriceHigherThan(p))
         return 0;
-    const int sign = p <= bid() ? -1 : 1;
+    const int sign = Bid().PriceHigherEqual(p) ? -1 : 1;
     const std::vector<Bar> &bars = sign > 0 ? asks : bids;
     for (auto bar : bars)
     {
-        if (abs(bar.Price() - p) < __DBL_EPSILON__)
+        // tick size is best introduced as a parameter of class Bar
+        // and all other classes are agnostic about it
+        if (bar.PriceSameAs(p))
             return sign;
     }
     return 0;
@@ -94,7 +96,7 @@ int LOB::PriceLocation(int s, double p) const
     int location = 0;
     for (auto bar : bars)
     {
-        if (bar.Price() >= p - __DBL_EPSILON__)
+        if (bar.PriceHigherEqual(p))
             break;
         location++;
     }
@@ -125,7 +127,7 @@ void LOB::AddLimitOrder(int s, double p, double v)
     else // exists a bar at price p on the other side of the book -> execute against the bar
     {
         // safety measure: make sure 2 sides never cross
-        if ((s > 0 && p < bid()) || (s < 0 && p > ask()))
+        if ((s > 0 && Bid().PriceHigherThan(p)) || (s < 0 && Ask().PriceLowerThan(p)))
             throw std::invalid_argument("Cannot post sell/buy limit order greater than bid/ask price!");
 
         std::vector<Bar> &bars_other_side = s > 0 ? bids : asks;
@@ -201,6 +203,7 @@ void LOB::PrintLOB() const
     std::string title = " Current limit order book ";
     std::string p_row = "price\t";
     std::string v_row = "volume\t";
+    // REPLACED: accuracy in format should be inline with tick size
     for (auto bar : bids)
     {
         p_row += boost::str(boost::format("%1$.1f\t") % bar.Price());
@@ -277,7 +280,7 @@ void LOB::AbsorbLimitOrder(std::vector<Bar> &eos,
     if (s == 0)
         return;
     // handle illegal LO as market orders
-    bool illegalLO = (s > 0 && p <= bid()) || (s < 0 && p >= ask());
+    bool illegalLO = (s > 0 && Bid().PriceHigherEqual(p)) || (s < 0 && Ask().PriceLowerEqual(p));
     while (illegalLO && v > __DBL_EPSILON__)
     {
         double p_lo = -s > 0 ? ask() : bid();
@@ -285,7 +288,7 @@ void LOB::AbsorbLimitOrder(std::vector<Bar> &eos,
         double v_exe = std::min(v_lo, v);
         v -= v_exe;
         AbsorbMarketOrder(eos, v_exe, s);
-        illegalLO = (s > 0 && p <= bid()) || (s < 0 && p >= ask());
+        illegalLO = (s > 0 && Bid().PriceHigherEqual(p)) || (s < 0 && Ask().PriceLowerEqual(p));
     }
     // exit the loop only when the order is fully executed or partially executed and legal
     if (v > __DBL_EPSILON__)

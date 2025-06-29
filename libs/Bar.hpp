@@ -19,7 +19,7 @@ public:
 
     inline double Price() const { return price; }
     inline double Volume() const { return volume; }
-    inline bool IsEmptyBar() const { return abs(price) < tick_size; }
+    inline bool IsEmptyBar() const { return abs(price) < tick_size / 2; }
     inline bool IsEmptyVolume() const { return abs(volume) < __DBL_EPSILON__; }
     inline bool IsEmpty() const { return IsEmptyBar() && IsEmptyVolume(); }
 
@@ -35,5 +35,8 @@ public:
     int ExecuteAgainst(double &v);
     void AddVolumesBy(double v);
 };
+
+const static Bar theBidBar = Bar(-__DBL_MAX__, __DBL_EPSILON__);
+const static Bar theAskBar = Bar(__DBL_MAX__, __DBL_EPSILON__);
 
 #endif
