@@ -1,12 +1,13 @@
 #include "Bar.hpp"
 
+const double EPSILON = 1e-9;
 const double MIN_TICKSIZE = 2 * __DBL_EPSILON__;
 double Bar::tick_size = MIN_TICKSIZE;
 
 Bar::Bar(double p, double v)
     : volume(v)
 {
-    price = tick_size <= MIN_TICKSIZE ? p : std::round(p / tick_size) * tick_size;
+    price = tick_size <= MIN_TICKSIZE ? p : std::round(p / tick_size + EPSILON) * tick_size;
 }
 
 Bar::Bar()
@@ -16,17 +17,20 @@ Bar::Bar()
 
 bool Bar::PriceSameAs(double p) const
 {
-    return abs(price - p) < tick_size / 2;
+    Bar newBar(p, 0.0);
+    return abs(price - newBar.price) < __DBL_EPSILON__;
 }
 
 bool Bar::PriceHigherThan(double p) const
 {
-    return price - tick_size / 2 > p;
+    Bar newBar(p, 0.0);
+    return price > newBar.price - __DBL_EPSILON__;
 }
 
 bool Bar::PriceLowerThan(double p) const
 {
-    return price + tick_size / 2 < p;
+    Bar newBar(p, 0.0);
+    return price < newBar.price + __DBL_EPSILON__;
 }
 
 bool Bar::PriceHigherEqual(double p) const

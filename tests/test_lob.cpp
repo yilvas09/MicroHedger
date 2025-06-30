@@ -787,3 +787,89 @@ BOOST_AUTO_TEST_CASE(test_large_lob_creation)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+// test cases for non-zero tick size should be placed at the end of the tests
+// as set tick_size is not revertible (for safety consideration)
+BOOST_AUTO_TEST_SUITE(LOBNonZeroTickSizeTests)
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_contains_price)
+{
+    const double ts = 0.1;
+    Bar::SetTickSize(ts);
+
+    std::vector<double> ask_prices = {101.0, 102.0};
+    std::vector<double> ask_volumes = {100.0, 200.0};
+    std::vector<double> bid_prices = {99.0, 98.0};
+    std::vector<double> bid_volumes = {150.0, 100.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(100.95), 1); // ask side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(101.04), 1); // ask side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(98.97), -1); // bid side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(99.02), -1); // bid side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(99.83), 0);  // between bid-ask
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(105.0), 0);  // not found
+}
+
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_location)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 104.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {97.0, 98.0, 99.0};
+    std::vector<double> bid_volumes = {100.0, 200.0, 150.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 101.04), 0); // lowest ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 100.95), 0); // lowest ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 101.05), 1); // higher than ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 101.84), 1); // lower than 102
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 102.06), 2); // between 102 and 104
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 103.95), 2); // between 102 and 104
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 104.05), 3); // highest ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 105.01), 3); // highest ask price
+
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 96.95), 0);  // lowest bid price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.04), 0);
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.05), 1);
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.94), 1);  // between 97 and 98
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.05), 2);  // between 98 and 99
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.95), 2);  // between 98 and 99
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 99.05), 3); // highest bid price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 100.0), 3); // highest bid price
+}
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_absorb_limit_order)
+{
+    LOB lob;
+
+    std::vector<Bar> eos;
+    double v = 100.0;
+    lob.AbsorbLimitOrder(eos, v, 99.98, 1); // ask
+    
+    eos.resize(0);
+    v = 150.0;
+    lob.AbsorbLimitOrder(eos, v, 100.0, 1); // same bar as ask price
+
+    eos.resize(0);
+    v = 200.0;
+    lob.AbsorbLimitOrder(eos, v, 103.0, 1); // ask, higher price
+
+    BOOST_CHECK_CLOSE(lob.Ask().Price(), 100.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.Ask().Volume(), 250.0, EPSILON);
+
+    eos.resize(0);
+    v = 150.0;
+    lob.AbsorbLimitOrder(eos, v, 99.97, -1); // bid
+    BOOST_CHECK_EQUAL(eos.size(), 1);
+
+    eos.resize(0);
+    v = 150.0;
+    lob.AbsorbLimitOrder(eos, v, 101.0, -1);
+
+    BOOST_CHECK_CLOSE(lob.bid(), 101.0, EPSILON);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
