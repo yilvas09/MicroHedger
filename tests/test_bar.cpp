@@ -42,6 +42,43 @@ BOOST_AUTO_TEST_CASE(test_negative_values)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(BarPriceComparisonTests)
+
+BOOST_AUTO_TEST_CASE(test_price_higher_than)
+{
+    Bar bar(100.0, 10);
+
+    BOOST_CHECK_EQUAL(bar.PriceHigherThan(99.98), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceHigherThan(100.00), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceHigherThan(100.11), FALSE);
+
+    BOOST_CHECK_EQUAL(bar.PriceHigherEqual(100.00), TRUE);
+}
+
+BOOST_AUTO_TEST_CASE(test_price_same_as)
+{
+    Bar bar(100.0, 10);
+
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(99.98), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(100.0), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(100.0 + __DBL_EPSILON__ / 2), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(100.11), FALSE);
+}
+
+BOOST_AUTO_TEST_CASE(test_price_lower_than)
+{
+    Bar bar(100.0, 10);
+
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(99.98), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(100.00), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(100.01), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(100.11), TRUE);
+
+    BOOST_CHECK_EQUAL(bar.PriceLowerEqual(100.00), TRUE);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 // test Bar::ExecuteAgainst
 BOOST_AUTO_TEST_SUITE(BarExecuteAgainstTests)
 
@@ -170,6 +207,63 @@ BOOST_AUTO_TEST_CASE(test_very_small_numbers)
     bar.AddVolumesBy(5e-15);
 
     BOOST_CHECK_CLOSE(bar.Volume(), 1.5e-14, 1e-15);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+// test cases for non-zero tick size should be placed at the end of the tests
+// as set tick_size is not revertible (for safety consideration)
+BOOST_AUTO_TEST_SUITE(BarNonZeroTickSizeTests)
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize)
+{
+    Bar::SetTickSize(0.1);
+    Bar bar(100.45, 250.0);
+    BOOST_CHECK_CLOSE(bar.Price(), 100.5, EPSILON);
+    BOOST_CHECK_CLOSE(bar.Volume(), 250.0, EPSILON);
+    BOOST_CHECK_EQUAL(bar.IsEmptyBar(), FALSE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), FALSE);
+
+    bar = Bar(100.42, 0.0);
+    BOOST_CHECK_CLOSE(bar.Price(), 100.4, EPSILON);
+    BOOST_CHECK_EQUAL(bar.IsEmptyBar(), FALSE);
+    BOOST_CHECK_EQUAL(bar.IsEmptyVolume(), TRUE);
+    BOOST_CHECK_EQUAL(bar.IsEmpty(), FALSE);
+
+    BOOST_CHECK_THROW(Bar::SetTickSize(0.01), std::logic_error);
+}
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_higher_than)
+{
+    Bar bar(100.0, 10);
+
+    BOOST_CHECK_EQUAL(bar.PriceHigherThan(99.88), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceHigherThan(100.01), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceHigherThan(100.11), FALSE);
+
+    BOOST_CHECK_EQUAL(bar.PriceHigherEqual(100.01), TRUE);
+}
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_same_as)
+{
+    Bar bar(100.0, 10);
+
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(99.88), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(99.98), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(100.0), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(100.0 + __DBL_EPSILON__ / 2), TRUE);
+    BOOST_CHECK_EQUAL(bar.PriceSameAs(100.11), FALSE);
+}
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_lower_than)
+{
+    Bar bar(100.0, 10);
+
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(99.88), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(100.01), FALSE);
+    BOOST_CHECK_EQUAL(bar.PriceLowerThan(100.11), TRUE);
+
+    BOOST_CHECK_EQUAL(bar.PriceLowerEqual(100.01), TRUE);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

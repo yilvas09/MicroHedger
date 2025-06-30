@@ -437,8 +437,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_basic)
     BOOST_CHECK_CLOSE(lob.bid(), 99.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.mid(), 100.0, EPSILON);
 
-    double ini_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask()));
-    double ini_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid()));
+    double ini_ask_vol = lob.Ask().Volume();
+    double ini_bid_vol = lob.Bid().Volume();
 
     // Apply decay
     lob.DecayOrders();
@@ -451,8 +451,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_basic)
     // Verify that decay occurred, i.e. volumes changed
     double expected_decay_factor_ask = exp(-d_coef * pow(lob.mid() - lob.ask(), 2));
     double expected_decay_factor_bid = exp(-d_coef * pow(lob.mid() - lob.bid(), 2));
-    double actual_decay_factor_ask = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask())) / ini_ask_vol;
-    double actual_decay_factor_bid = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid())) / ini_bid_vol;
+    double actual_decay_factor_ask = lob.Ask().Volume() / ini_ask_vol;
+    double actual_decay_factor_bid = lob.Bid().Volume() / ini_bid_vol;
     BOOST_CHECK_CLOSE(actual_decay_factor_ask, expected_decay_factor_ask, EPSILON);
     BOOST_CHECK_CLOSE(actual_decay_factor_bid, expected_decay_factor_bid, EPSILON);
 }
@@ -471,8 +471,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_zero_coefficient)
     double initial_ask = lob.ask();
     double initial_bid = lob.bid();
     double initial_mid = lob.mid();
-    double initial_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, initial_ask));
-    double initial_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, initial_bid));
+    double initial_ask_vol = lob.Ask().Volume();
+    double initial_bid_vol = lob.Bid().Volume();
 
     // Apply zero decay coefficient (no decay should occur) TODO: check volume same
     lob.DecayOrders(0.0);
@@ -481,8 +481,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_zero_coefficient)
     BOOST_CHECK_CLOSE(lob.ask(), initial_ask, EPSILON);
     BOOST_CHECK_CLOSE(lob.bid(), initial_bid, EPSILON);
     BOOST_CHECK_CLOSE(lob.mid(), initial_mid, EPSILON);
-    BOOST_CHECK_CLOSE(lob.getVolumeAt(1, 0), initial_ask_vol, EPSILON);
-    BOOST_CHECK_CLOSE(lob.getVolumeAt(-1, -1), initial_bid_vol, EPSILON);
+    BOOST_CHECK_CLOSE(lob.Ask().Volume(), initial_ask_vol, EPSILON);
+    BOOST_CHECK_CLOSE(lob.Bid().Volume(), initial_bid_vol, EPSILON);
 }
 
 BOOST_AUTO_TEST_CASE(test_decay_orders_symmetric_decay)
@@ -503,8 +503,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_symmetric_decay)
 
     lob.DecayOrders(d_coef);
 
-    double actual_decay_factor_ask = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask())) / ask_volumes[0];
-    double actual_decay_factor_bid = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid())) / bid_volumes[0];
+    double actual_decay_factor_ask = lob.Ask().Volume() / ask_volumes[0];
+    double actual_decay_factor_bid = lob.Bid().Volume() / bid_volumes[0];
 
     // After decay, spread should remain the same since decay is symmetric
     BOOST_CHECK_CLOSE(lob.mid(), p_mid, EPSILON);
@@ -550,8 +550,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_negative_coefficient)
     LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
 
     double initial_mid = lob.mid();
-    double ini_ask_vol = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask()));
-    double ini_bid_vol = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid()));
+    double ini_ask_vol = lob.Ask().Volume();
+    double ini_bid_vol = lob.Bid().Volume();
 
     // Apply negative decay coefficient
     double d_coef = -0.01;
@@ -564,8 +564,8 @@ BOOST_AUTO_TEST_CASE(test_decay_orders_negative_coefficient)
     // Verify that decay occurred, i.e. volumes changed
     double expected_decay_factor_ask = exp(-d_coef * pow(lob.mid() - lob.ask(), 2));
     double expected_decay_factor_bid = exp(-d_coef * pow(lob.mid() - lob.bid(), 2));
-    double actual_decay_factor_ask = lob.getVolumeAt(1, lob.PriceLocation(1, lob.ask())) / ini_ask_vol;
-    double actual_decay_factor_bid = lob.getVolumeAt(-1, lob.PriceLocation(-1, lob.bid())) / ini_bid_vol;
+    double actual_decay_factor_ask = lob.Ask().Volume() / ini_ask_vol;
+    double actual_decay_factor_bid = lob.Bid().Volume() / ini_bid_vol;
     BOOST_CHECK_CLOSE(actual_decay_factor_ask, expected_decay_factor_ask, EPSILON);
     BOOST_CHECK_CLOSE(actual_decay_factor_bid, expected_decay_factor_bid, EPSILON);
 }
@@ -784,6 +784,92 @@ BOOST_AUTO_TEST_CASE(test_large_lob_creation)
     BOOST_CHECK_CLOSE(large_lob.ask(), 101.0, EPSILON);
     BOOST_CHECK_CLOSE(large_lob.bid(), 100.0, EPSILON);
     BOOST_CHECK(!large_lob.oneSideEmpty());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+// test cases for non-zero tick size should be placed at the end of the tests
+// as set tick_size is not revertible (for safety consideration)
+BOOST_AUTO_TEST_SUITE(LOBNonZeroTickSizeTests)
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_contains_price)
+{
+    const double ts = 0.1;
+    Bar::SetTickSize(ts);
+
+    std::vector<double> ask_prices = {101.0, 102.0};
+    std::vector<double> ask_volumes = {100.0, 200.0};
+    std::vector<double> bid_prices = {99.0, 98.0};
+    std::vector<double> bid_volumes = {150.0, 100.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(100.95), 1); // ask side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(101.04), 1); // ask side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(98.97), -1); // bid side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(99.02), -1); // bid side
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(99.83), 0);  // between bid-ask
+    BOOST_CHECK_EQUAL(lob.ContainsPrice(105.0), 0);  // not found
+}
+
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_location)
+{
+    std::vector<double> ask_prices = {101.0, 102.0, 104.0};
+    std::vector<double> ask_volumes = {100.0, 200.0, 150.0};
+    std::vector<double> bid_prices = {97.0, 98.0, 99.0};
+    std::vector<double> bid_volumes = {100.0, 200.0, 150.0};
+
+    LOB lob(ask_prices, ask_volumes, bid_prices, bid_volumes);
+
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 101.04), 0); // lowest ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 100.95), 0); // lowest ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 101.05), 1); // higher than ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 101.84), 1); // lower than 102
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 102.06), 2); // between 102 and 104
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 103.95), 2); // between 102 and 104
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 104.05), 3); // highest ask price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(1, 105.01), 3); // highest ask price
+
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 96.95), 0);  // lowest bid price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.04), 0);
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.05), 1);
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.94), 1);  // between 97 and 98
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.05), 2);  // between 98 and 99
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.95), 2);  // between 98 and 99
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 99.05), 3); // highest bid price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 100.0), 3); // highest bid price
+}
+
+BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_absorb_limit_order)
+{
+    LOB lob;
+
+    std::vector<Bar> eos;
+    double v = 100.0;
+    lob.AbsorbLimitOrder(eos, v, 99.98, 1); // ask
+    
+    eos.resize(0);
+    v = 150.0;
+    lob.AbsorbLimitOrder(eos, v, 100.0, 1); // same bar as ask price
+
+    eos.resize(0);
+    v = 200.0;
+    lob.AbsorbLimitOrder(eos, v, 103.0, 1); // ask, higher price
+
+    BOOST_CHECK_CLOSE(lob.Ask().Price(), 100.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.Ask().Volume(), 250.0, EPSILON);
+
+    eos.resize(0);
+    v = 150.0;
+    lob.AbsorbLimitOrder(eos, v, 99.97, -1); // bid
+    BOOST_CHECK_EQUAL(eos.size(), 1);
+
+    eos.resize(0);
+    v = 150.0;
+    lob.AbsorbLimitOrder(eos, v, 101.0, -1);
+
+    BOOST_CHECK_CLOSE(lob.bid(), 101.0, EPSILON);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
