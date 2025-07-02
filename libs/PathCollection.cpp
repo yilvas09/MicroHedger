@@ -3,6 +3,44 @@
 #include "PathCollection.hpp"
 #include <boost/format.hpp>
 
+void PathInfo::GenerateScenarios(std::vector<PathInfo> &scens,
+                                 const Parameter &param_name,
+                                 const std::vector<double> &range,
+                                 const PathInfo &pi_template)
+{
+    const int n = range.size();
+    scens.resize(n, pi_template);
+    for (int i = 0; i < n; i++)
+    {
+        PathInfo& scen = scens[i];
+        double val = range[i];
+        switch (param_name)
+        {
+        case N_DAYS:
+            scen.n_days = val;
+            break;
+        case N_HOURS:
+            scen.n_hours = val;
+            break;
+        case N_QUARTERS:
+            scen.n_quarters = val;
+            break;
+        case INI_FUNDAMENTAL:
+            scen.p_0 = val;
+            break;
+        case HEDGER_OPTION_POSITION:
+            scen.hedger_opt_pos = val;
+            break;
+        case HEDGER_IMPLIED_VOLATILITY:
+            scen.hedger_implied_vol = val;
+            break;
+        default:
+            throw std::invalid_argument("This parameter is not supported yet.");
+            break;
+        }
+    }
+}
+
 Path::Path(
     const PathInfo &_path_info,
     const RandomInfo &_ran_info)

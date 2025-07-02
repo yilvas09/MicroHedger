@@ -30,4 +30,28 @@ enum OptionType
     INVALID = 999
 };
 
+enum Parameter
+{
+    // path info
+    N_DAYS = 0,
+    N_HOURS = 1,
+    N_QUARTERS = 2,
+    INI_FUNDAMENTAL = 3,
+    INI_LOB_VOLUME = 4,
+    INI_LOB_DECAY = 5,
+    HEDGER_OPTION_POSITION = 6,
+    HEDGER_IMPLIED_VOLATILITY = 7,
+    // random info
+    RANDOM_SEED = 8,
+    VOLATILITY_FUNDAMENTAL = 9,
+    ORDER_INTENSITY = 10,
+    PROB_MARKETORDER = 11,
+    PROB_INFORMED = 12,
+    PROB_BUY = 13,
+    VOLUME_MIN = 14,
+    VOLUME_MAX = 15,
+    SPREAD_MEAN = 16,
+    SPREAD_VOLATILITY = 17
+};
+
 #endif

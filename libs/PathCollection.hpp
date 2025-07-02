@@ -29,6 +29,11 @@ struct PathInfo
           hedger_implied_vol(_h_iv)
     {
     }
+
+    static void GenerateScenarios(std::vector<PathInfo> &scens,
+                                  const Parameter &param_name,
+                                  const std::vector<double> &range,
+                                  const PathInfo &template_pi);
 };
 
 class Path
