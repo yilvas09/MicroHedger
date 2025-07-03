@@ -62,7 +62,7 @@ void Random::GenerateOrder(OrderType &o_type, // [O] - LIMITORDER or MARKETORDER
         s = ber_dist_sign(generator) > p_sign ? 1 : -1;
         // informed market makers use fundamental price as reference,
         // while uninformed ones use mid prices
-        p = (informed ? p_fund : p_mid) + s * norm_dist_p_mm(generator);
+        p = (informed ? p_fund : p_mid) - s * norm_dist_p_mm(generator);
         break;
     }
     default:

@@ -85,7 +85,7 @@ void Path::GenOnePath()
             for (int hour = 0; hour < n_hours; hour++)
             {
                 // news arrives and fundamental price changes
-                const double ph = fund_prices.back();
+                const double ph = rd.GenerateShockedPrice(fund_prices.back());
                 for (int quar = 0; quar < n_quarters; quar++)
                 {
                     // create a copy of current LOB
@@ -104,7 +104,7 @@ void Path::GenOnePath()
                         exe_orders.push_back(exe_order);
                         mid_prices.push_back(currLOB.mid());
                     }
-                    fund_prices.push_back(rd.GenerateShockedPrice(ph));
+                    fund_prices.push_back(ph);
                     lobs.push_back(currLOB);
 
                     // based on execution results of this quarter hedger knows his state
