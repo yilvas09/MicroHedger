@@ -138,6 +138,8 @@ We first set a list of benchmark parameters as in table 2. We then vary the opti
 | $\sigma_0$ | 0 | std.dev. of the fundamental news shock |
 | $\xi$ | 0.05 | order decay parameters |
 
+### Stationarity
+
 In particular, when we vary the number of trader sessions/intervals/sub-intervals, we also plot the trajectories bid/ask volumes of the LOB, to confirm all other comparative statics tests are performed under a time horizon long enough to guarantee stationarity.
 
 <!-- ### Quick Start
