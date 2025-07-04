@@ -1,6 +1,6 @@
 # MicroHedger
 
-A computational replication of "Gamma Positioning and Market Quality" by Buis et al. (2024), exploring the impact of dynamic hedgers' gamma positioning on market quality, especially liquidity and probability dry-outs, through agent-based simulations.
+A computational replication of "Gamma Positioning and Market Quality" by Buis et al. (2024), exploring the impact of dynamic hedgers' gamma positioning on market quality, with a particular focus on liquidity and probability dry-outs, through agent-based simulations.
 
 ## Paper Overview
 
@@ -24,9 +24,42 @@ The original paper studies the effect of gamma positioning of dynamic hedgers on
 MicroHedger aims to:
 
 1. **Replicate** the zero-intelligence agent-based model from Buis et al. (2024)
-2. **Reproduce** key findings regarding gamma positioning effects on market quality
-3. **Extend** the analysis with additional scenarios, participants, and sensitivity tests
-4. **Provide** an accessible implementation for researchers and practitioners
+2. **Reproduce** key findings regarding gamma positioning effects on market failure rates, in particular the phase diagrams w.r.t. different parameters that are provided as in table 1.
+3. **Analytise** trajectories of volumes of the limit-order book all paths, failed and unfailed, under various time horizons to confirm stationarity.
+
+#### Table 1: Failure rate of simulated markets, presented in Buils et al. (2024)
+
+|                | -80 | -60 | -40 | -20 | 0   | 20  | 40  | 60  | 80  |
+|----------------|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+| **Panel A: immediacy i**         ||||||||||
+| i = 0.3        | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| i = 0.325      | 5%  | 10% | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| i = 0.35       | 50% | 45% | 5%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| i = 0.375      | 95% | 90% | 45% | 0%  | 20% | 0%  | 0%  | 0%  | 0%  |
+| i = 0.4        | 100%| 95% | 100%| 90% | 85% | 0%  | 0%  | 0%  | 0%  |
+| i = 0.45       | 100%| 100%| 100%| 100%| 100%| 95% | 65% | 10% | 10% |
+| i = 0.5        | 100%| 100%| 100%| 100%| 100%| 100%| 100%| 100%| 95% |
+| **Panel B: news volatility σₙ**  ||||||||||
+| σₙ = 0.01      | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| σₙ = 0.025     | 10% | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| σₙ = 0.05      | 35% | 15% | 10% | 5%  | 0%  | 0%  | 5%  | 10% | 0%  |
+| σₙ = 0.075     | 75% | 70% | 55% | 35% | 20% | 20% | 20% | 20% | 40% |
+| σₙ = 0.1       | 100%| 100%| 90% | 75% | 65% | 55% | 55% | 70% | 65% |
+| σₙ = 0.125     | 100%| 100%| 90% | 85% | 80% | 100%| 95% | 80% | 65% |
+| **Panel C: order decay ζ**       ||||||||||
+| ζ = 0.05       | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| ζ = 0.075      | 50% | 15% | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| ζ = 0.1        | 70% | 40% | 5%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| ζ = 0.125      | 80% | 80% | 25% | 5%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| ζ = 0.15       | 100%| 100%| 50% | 15% | 0%  | 0%  | 0%  | 0%  | 5%  |
+| ζ = 0.175      | 100%| 100%| 85% | 35% | 10% | 5%  | 0%  | 0%  | 0%  |
+| **Panel D: market maker spread μₚ** ||||||||||
+| μₚ = -0.1      | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| μₚ = -0.15     | 0%  | 5%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| μₚ = -0.2      | 25% | 20% | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| μₚ = -0.25     | 90% | 75% | 20% | 0%  | 0%  | 0%  | 0%  | 0%  | 0%  |
+| μₚ = -0.3      | 100%| 100%| 95% | 20% | 0%  | 10% | 40% | 30% | 30% |
+| μₚ = -0.35     | 100%| 100%| 100%| 90% | 5%  | 75% | 85% | 75% | 75% |
 
 ## Methodology
 
@@ -39,10 +72,15 @@ The simulation framework implements:
 
 ### Key Model Components
 
-- **Agent Types**: Informed traders, noise traders, dynamic hedgers
+- **Agent Types**: note that for the first 4 types, we model 4 different order arrival processes (rather than agents' behaviour).
+  - informed investors (liquitidy takers);
+  - uninformed investors;
+  - informed market makers (liquidity providers);
+  - uninformed market makers;
+  - dynamic hedgers.
 - **Gamma Positioning**: Positive, negative, and neutral gamma scenarios
 - **Market Structure**: Continuous double auction with realistic market microstructure
-- **Quality Metrics**: Bid-ask spreads, price impact, volatility measures, market depth
+- **Quality Metrics**: **Market failure rate** (and probably bid-ask spreads, price impact, volatility measures, and market depth)
 
 ## 🚀 Getting Started
 
@@ -71,6 +109,36 @@ cd build
 cmake ..
 make
 ```
+
+## Experiments and results
+
+### Comparative statics
+
+We first set a list of benchmark parameters as in table 2. We then vary the option position and each of the following parameters, in order to obtain a two-dimension surface of market failure rate.
+
+#### Table 2: Benchmark parameters
+
+| Parameter | Value | Meaning |
+|:---------:|:-----:|:-------:|
+| Ticksize  | 0.01  | tick size |
+| *N*       | 100   | number of paths |
+| *T*       | 20    | number of trading sessions ('days') |
+| *H*       | 10    | number of trading intervals ('hours') |
+| *Q*       | 4     | number of trading sub-intervals ('quarters') |
+| *λ*       | 40    | order arrival intensity |
+| *u*       | 0.3   | probability of market orders |
+| *i*       | 0.3   | probability of informed orders |
+| $\sigma_p $ | 0.1 | std.dev. of spreads of incoming limit orders |
+| $\mu_p$ | -0.1 | mean of spreads of incoming limit orders |
+| $\sigma$ | 0.089 | implied volatility for delta calculation |
+| $\nu_{\text{min}}$ | 0 | minimum volume of incoming orders |
+| $\nu_{\text{max}}$ | 1 | maximum volume of incoming orders |
+| $p_0$ | 5 | initial value of the fundamental price |
+| $\mu_0$ | 0 | mean of the fundamental news shock |
+| $\sigma_0$ | 0 | std.dev. of the fundamental news shock |
+| $\xi$ | 0.05 | order decay parameters |
+
+In particular, when we vary the number of trader sessions/intervals/sub-intervals, we also plot the trajectories bid/ask volumes of the LOB, to confirm all other comparative statics tests are performed under a time horizon long enough to guarantee stationarity.
 
 <!-- ### Quick Start
 
