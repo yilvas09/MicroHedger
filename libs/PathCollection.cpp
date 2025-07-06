@@ -12,7 +12,7 @@ void PathInfo::GenerateScenarios(std::vector<PathInfo> &scens,
     scens.resize(n, pi_template);
     for (int i = 0; i < n; i++)
     {
-        PathInfo& scen = scens[i];
+        PathInfo &scen = scens[i];
         double val = range[i];
         switch (param_name)
         {
@@ -158,6 +158,15 @@ PathCollection::PathCollection(int n,
 
 PathCollection::~PathCollection()
 {
+}
+
+std::vector<double> PathCollection::getLOBVolumeTrajectories(int s, int path_id) const
+{
+    std::vector<double> volumes;
+    auto &lobs = snapshots.at(path_id).lobs;
+    for (auto &l : lobs)
+        volumes.push_back(s * l.getTotalVolume(s));
+    return volumes;
 }
 
 // this function should updates std::vector<Path> snapshots

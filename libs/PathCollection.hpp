@@ -77,6 +77,8 @@ public:
     PathCollection(int n, const PathInfo &pi, const RandomInfo &ri);
     ~PathCollection();
 
+    std::vector<double> getLOBVolumeTrajectories(int s, int path_id) const;
+
     void GeneratePaths();
     void CalcLiquidityMetrics(std::vector<double> &res) const;
     void FindPathsWithStatus(int status, std::vector<int> &indices) const;
