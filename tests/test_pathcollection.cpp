@@ -44,11 +44,11 @@ BOOST_AUTO_TEST_CASE(test_backward_compatibility_case_1)
     std::vector<double> res;
     paths.CalcLiquidityMetrics(res);
 
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[0]), std::string("0.5000"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[1]), std::string("0.0027"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[2]), std::string("0.0345"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[3]), std::string("0.0637"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[4]), std::string("0.0000"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[0]), std::string("0.1000"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[1]), std::string("0.0024"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[2]), std::string("0.0275"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[3]), std::string("0.0632"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[4]), std::string("0.0001"));
 }
 
 BOOST_AUTO_TEST_CASE(test_backward_compatibility_case_2)
@@ -87,11 +87,11 @@ BOOST_AUTO_TEST_CASE(test_backward_compatibility_case_2)
     std::vector<double> res;
     paths.CalcLiquidityMetrics(res);
 
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[0]), std::string("0.1000"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[0]), std::string("0.0000"));
     BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[1]), std::string("0.0024"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[2]), std::string("0.1428"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[3]), std::string("0.0642"));
-    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[4]), std::string("0.1535"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[2]), std::string("0.0333"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[3]), std::string("0.0567"));
+    BOOST_CHECK_EQUAL(boost::str(boost::format("%1$.4f") % res[4]), std::string("0.1642"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

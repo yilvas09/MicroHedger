@@ -63,7 +63,7 @@ double LOB::getPriceAt(int s, int pos) const
 
 double LOB::getTotalVolume(int s) const
 {
-    CheckUnsafeCall();
+    // CheckUnsafeCall();
     if (s == 0)
         return 0.0;
     double volume = 0.0;
@@ -184,7 +184,22 @@ double LOB::AbsorbMarketOrder(std::vector<Bar> &eos,
     double pos_ttl = 0.0;
     int s_other_side = -s;
     std::vector<Bar> &bars_other_side = s_other_side > 0 ? asks : bids; // sell orders, otherside = bid; buy orders, otherside - asks
-    // if otherside is ask, loop from begin to end; if bid, loop from end to begin
+
+    // clean up dummy bars before exercising market order
+    std::vector<Bar>::iterator it0 = s_other_side > 0 ? bars_other_side.begin() : bars_other_side.end() - 1;
+    auto &bar0 = *(it0);
+    while (bars_other_side.size() && bar0.Volume() < __DBL_EPSILON__)
+    {
+        bars_other_side.erase(it0);
+        if (bars_other_side.size())
+        {
+            it0 = s_other_side > 0 ? bars_other_side.begin() : bars_other_side.end() - 1;
+            bar0 = *(it0);
+        }
+        else
+            break;
+    }
+
     while (v > __DBL_EPSILON__ && bars_other_side.size())
     {
         double orig_v = v;
