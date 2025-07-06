@@ -61,6 +61,18 @@ double LOB::getPriceAt(int s, int pos) const
     return getBarAt(s, pos).Price();
 }
 
+double LOB::getTotalVolume(int s) const
+{
+    CheckUnsafeCall();
+    if (s == 0)
+        return 0.0;
+    double volume = 0.0;
+    auto &bars = s > 0 ? asks : bids;
+    for (auto &b : bars)
+        volume += b.Volume();
+    return volume;
+}
+
 void LOB::CheckUnsafeCall() const
 {
     if (safety_check && oneSideEmpty())

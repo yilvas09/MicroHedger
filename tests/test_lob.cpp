@@ -16,6 +16,8 @@ BOOST_AUTO_TEST_CASE(test_default_constructor)
 
     BOOST_CHECK_CLOSE(lob.bid(), -__DBL_MAX__, EPSILON);
     BOOST_CHECK_CLOSE(lob.ask(), __DBL_MAX__, EPSILON);
+    BOOST_CHECK_CLOSE(lob.getTotalVolume(-1), 0.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.getTotalVolume(1), 0.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.mid(), 0.0, EPSILON);
     BOOST_CHECK(lob.oneSideEmpty());
     BOOST_CHECK_THROW(lob.getBarAt(1, 0), std::invalid_argument);
@@ -36,7 +38,10 @@ BOOST_AUTO_TEST_CASE(test_parameterized_constructor)
     BOOST_CHECK_CLOSE(lob.mid(), 100.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.getVolumeAt(1, 1), 200.0, EPSILON);
     BOOST_CHECK_CLOSE(lob.getVolumeAt(-1, -3), 200.0, EPSILON);
-    BOOST_CHECK_CLOSE(lob.mid(), 100.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.getTotalVolume(1), 450.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.getTotalVolume(0), 0.0, EPSILON);
+    BOOST_CHECK_CLOSE(lob.getTotalVolume(-1), 450.0, EPSILON);
+
     BOOST_CHECK(!lob.oneSideEmpty());
     BOOST_CHECK_THROW(lob.getBarAt(1, 3), std::invalid_argument);
     BOOST_CHECK_THROW(lob.getBarAt(-1, -4), std::invalid_argument);
@@ -812,7 +817,6 @@ BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_contains_price)
     BOOST_CHECK_EQUAL(lob.ContainsPrice(105.0), 0);  // not found
 }
 
-
 BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_location)
 {
     std::vector<double> ask_prices = {101.0, 102.0, 104.0};
@@ -831,12 +835,12 @@ BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_price_location)
     BOOST_CHECK_EQUAL(lob.PriceLocation(1, 104.05), 3); // highest ask price
     BOOST_CHECK_EQUAL(lob.PriceLocation(1, 105.01), 3); // highest ask price
 
-    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 96.95), 0);  // lowest bid price
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 96.95), 0); // lowest bid price
     BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.04), 0);
     BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.05), 1);
-    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.94), 1);  // between 97 and 98
-    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.05), 2);  // between 98 and 99
-    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.95), 2);  // between 98 and 99
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 97.94), 1); // between 97 and 98
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.05), 2); // between 98 and 99
+    BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 98.95), 2); // between 98 and 99
     BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 99.05), 3); // highest bid price
     BOOST_CHECK_EQUAL(lob.PriceLocation(-1, 100.0), 3); // highest bid price
 }
@@ -848,7 +852,7 @@ BOOST_AUTO_TEST_CASE(test_nonzero_ticksize_absorb_limit_order)
     std::vector<Bar> eos;
     double v = 100.0;
     lob.AbsorbLimitOrder(eos, v, 99.98, 1); // ask
-    
+
     eos.resize(0);
     v = 150.0;
     lob.AbsorbLimitOrder(eos, v, 100.0, 1); // same bar as ask price

@@ -34,6 +34,8 @@ public:
     const Bar &getBarAt(int s, int pos) const;
     double getVolumeAt(int s, int pos) const;
     double getPriceAt(int s, int pos) const;
+    
+    double getTotalVolume(int s) const;
 
     int ContainsPrice(double p) const;
     int PriceLocation(int s, double p) const;
