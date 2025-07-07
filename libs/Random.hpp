@@ -42,6 +42,11 @@ struct RandomInfo
     {
         seed = _seed;
     }
+
+    static void GenerateScenarios(std::vector<RandomInfo> &scens,
+                                  const Parameter &param_name,
+                                  const std::vector<double> &range,
+                                  const RandomInfo &ri_template);
 };
 
 class Random

@@ -1,5 +1,56 @@
 #include "Random.hpp"
 
+void RandomInfo::GenerateScenarios(std::vector<RandomInfo> &scens,
+                                   const Parameter &param_name,
+                                   const std::vector<double> &range,
+                                   const RandomInfo &ri_template)
+{
+    const int n = range.size();
+    scens.resize(n, ri_template);
+    for(int i = 0; i<n;i++)
+    {
+        RandomInfo &scen = scens[i];
+        double val = range[i];
+        switch (param_name)
+        {
+        case RANDOM_SEED:
+            scen.seed = val;
+            break;
+        case VOLATILITY_FUNDAMENTAL:
+            scen.vol_news = val;
+            break;
+        case ORDER_INTENSITY:
+            scen.order_intensity = val;
+            break;
+        case PROB_LIMITORDER:
+            scen.prob_otype = val;
+            break;
+        case PROB_INFORMED:
+            scen.prob_info = val;
+            break;
+        case PROB_BUY:
+            scen.prob_sign = val;
+            break;
+        case VOLUME_MIN:
+            scen.v_min = val;
+            break;
+        case VOLUME_MAX:
+            scen.v_max = val;
+            break;
+        case SPREAD_MEAN:
+            scen.mean_spread = val;
+            break;
+        case SPREAD_VOLATILITY:
+            scen.vol_spread = val;
+            break;
+        default:
+            throw std::invalid_argument("This parameter is not supported yet.");
+            break;
+        }
+    }
+
+}
+
 Random::Random(int _seed,
                double _vol_news,
                double _order_intensity,
