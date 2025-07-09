@@ -1,5 +1,6 @@
 #include <cmath>
 #include "Utils.hpp"
+#include <boost/format.hpp>
 
 #define M_SQRT_2_PI sqrt(2 * M_PI)
 
@@ -32,4 +33,19 @@ double Utils::normalCDF(double x)
 double Utils::normalPDF(double x)
 {
     return exp(-0.5 * x * x) / M_SQRT_2_PI;
+}
+
+void Utils::prettyPrint2DVector(std::vector<std::vector<double>> tables)
+{
+    std::cout << "==================================================" << std::endl;
+    for (auto &row : tables)
+    {
+        std::string res_row;
+        for (auto &val : row)
+        {
+            res_row += boost::str(boost::format("%1$.4f\t") % val);
+        }
+        std::cout << res_row << std::endl;
+    }
+    std::cout << "==================================================" << std::endl;
 }

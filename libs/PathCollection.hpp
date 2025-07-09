@@ -83,4 +83,6 @@ public:
     void CalcLiquidityMetrics(std::vector<double> &res) const;
     void FindPathsWithStatus(int status, std::vector<int> &indices) const;
     void PrintSimulationResults() const;
+
+    double getLiquidityMetrics(int index) const;
 };

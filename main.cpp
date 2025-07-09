@@ -41,8 +41,11 @@ int main()
     RandomInfo ri_benchmark(seed, vol_news, order_arrival_intensity,
                             p_otype, p_info, vol_min, vol_max, m_spr, v_spr, 0.5);
 
-    Parameter param_type = PROB_LIMITORDER;
-    const std::vector<double> param_range = {0.5, 0.55, 0.6, 0.625, 0.65, 0.675, 0.7};
+    Parameter param1_type = PROB_LIMITORDER;
+    const std::vector<double> param1_range = {0.5, 0.55, 0.6, 0.625, 0.65, 0.675, 0.7};
+
+    Parameter param2_type = HEDGER_OPTION_POSITION;
+    const std::vector<double> param2_range = {-80, -40, 0, 40, 80};
 
     // path info scenarios
     // std::vector<PathInfo> pi_scenarios;
@@ -55,14 +58,34 @@ int main()
     // }
 
     // random info scenarios
-    std::vector<RandomInfo> ri_scenarios;
-    RandomInfo::GenerateScenarios(ri_scenarios, param_type, param_range, ri_benchmark);
-    for (auto &ri_scen : ri_scenarios)
+    // std::vector<RandomInfo> ri_scenarios;
+    // RandomInfo::GenerateScenarios(ri_scenarios, param1_type, param1_range, ri_benchmark);
+    // for (auto &ri_scen : ri_scenarios)
+    // {
+    //     PathCollection paths(n_samples, pi_benchmark, ri_scen);
+    //     paths.GeneratePaths();
+    //     paths.PrintSimulationResults();
+    // }
+
+    // phase diagrams (comparative statics w.r.t. gamma positions and other parameters)
+    std::vector<std::vector<double>> res;
+    std::vector<PathInfo> param2_scens;
+    PathInfo::GenerateScenarios(param2_scens, param2_type, param2_range, pi_benchmark);
+    for (PathInfo &p2_sc : param2_scens)
     {
-        PathCollection paths(n_samples, pi_benchmark, ri_scen);
-        paths.GeneratePaths();
-        paths.PrintSimulationResults();
+        std::vector<double> r;
+        std::vector<RandomInfo> param1_scens;
+        RandomInfo::GenerateScenarios(param1_scens, param1_type, param1_range, ri_benchmark);
+        for (RandomInfo &p1_sc : param1_scens)
+        {
+            PathCollection paths(n_samples, p2_sc, p1_sc);
+            paths.GeneratePaths();
+            r.push_back(paths.getLiquidityMetrics(0)); // only save the market failure rate
+        }
+        res.push_back(r);
     }
+
+    // Utils::prettyPrint2DVector(res);
 
     // stationarity analysis
     // PathCollection paths(n_samples, pi_benchmark, ri_benchmark);

@@ -295,3 +295,12 @@ void PathCollection::PrintSimulationResults() const
     }
     std::cout << "==============================" << std::endl;
 }
+
+double PathCollection::getLiquidityMetrics(int index) const
+{
+    std::vector<double> res;
+    CalcLiquidityMetrics(res);
+    if (index < 0 || index >= res.size())
+        throw std::invalid_argument("Results index out of the boundary.");
+    return res.at(index);
+}
