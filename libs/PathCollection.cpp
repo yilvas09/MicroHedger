@@ -104,8 +104,6 @@ void Path::GenOnePath()
                         exe_orders.push_back(exe_order);
                         mid_prices.push_back(currLOB.mid());
                     }
-                    fund_prices.push_back(ph);
-                    lobs.push_back(currLOB);
 
                     // based on execution results of this quarter hedger knows his state
                     if (!hedger.IsMyOrderExecuted(exe_orders))
@@ -126,6 +124,10 @@ void Path::GenOnePath()
                         // or he updates his inventories
                         hedger.UpdateInventories(exe_orders);
                     }
+
+                    // record latest fundamental prices and lob
+                    fund_prices.push_back(ph);
+                    lobs.push_back(currLOB);
                 }
                 // delta update from hedger's reevaluation, calculate gamma
                 time = day + (hour + 1) * 1. / n_hours;

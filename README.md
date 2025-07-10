@@ -138,6 +138,19 @@ We first set a list of benchmark parameters as in table 2. We then vary the opti
 | $\sigma_0$ | 0 | std.dev. of the fundamental news shock |
 | $\xi$ | 0.05 | order decay parameters |
 
+#### Results
+
+|            | -80    | -40    | 0      | 40     | 80     |
+|------------|--------|--------|--------|--------|--------|
+| **Panel A: immediacy i** | | | | | |
+| i = 0.5    | 100%   | 100%   | 100%   | 100%   | 100%   |
+| i = 0.45   | 100%   | 100%   | 100%   | 100%   | 100%   |
+| i = 0.4    | 100%   | 100%   | 99%    | 47%    | 17%    |
+| i = 0.375  | 95%    | 100%   | 26%    | 3%     | 1%     |
+| i = 0.35   | 82%    | 76%    | 0%     | 0%     | 0%     |
+| i = 0.325  | 62%    | 19%    | 0%     | 0%     | 0%     |
+| i = 0.3    | 16%    | 2%     | 0%     | 0%     | 0%     |
+
 ### Stationarity
 
 In particular, when we vary the number of trader sessions/intervals/sub-intervals, we also plot the trajectories bid/ask volumes of the LOB, to confirm all other comparative statics tests are performed under a time horizon long enough to guarantee stationarity.

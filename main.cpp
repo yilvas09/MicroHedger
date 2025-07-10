@@ -85,7 +85,7 @@ int main()
         res.push_back(r);
     }
 
-    // Utils::prettyPrint2DVector(res);
+    Utils::prettyPrint2DVector(res);
 
     // stationarity analysis
     // PathCollection paths(n_samples, pi_benchmark, ri_benchmark);
